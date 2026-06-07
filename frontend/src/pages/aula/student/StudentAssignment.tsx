@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/apiClient';
+import { sanitizeHtml } from '@/lib/sanitizeHtml';
 import { Loader, ClipboardList, Upload, CheckCircle, AlertCircle, ChevronLeft } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -110,7 +111,7 @@ export default function StudentAssignment() {
         <h2 className="text-xl font-black text-slate-800 mb-4">Instrucciones</h2>
         <div
           className="prose prose-sm max-w-none text-slate-600"
-          dangerouslySetInnerHTML={{ __html: assignment.instructions }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(assignment.instructions) }}
         />
       </div>
 

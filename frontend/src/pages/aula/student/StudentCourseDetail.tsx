@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/apiClient';
+import { sanitizeHtml } from '@/lib/sanitizeHtml';
 import type { CourseModule, ContentItem } from '@/lib/types';
 import { CONTENT_TYPE_META } from '@/features/modules/contentTypeMeta';
 import {
@@ -94,7 +95,7 @@ const ContentRenderer: React.FC<{ item: ContentItem; courseId: string | undefine
       return (
         <div
           className="mt-3 prose prose-sm max-w-none text-slate-700 bg-slate-50 rounded-2xl p-4 border border-slate-100"
-          dangerouslySetInnerHTML={{ __html: item.body_html ?? '' }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.body_html) }}
         />
       );
 

@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { apiClient } from "../lib/apiClient";
+import { sanitizeHtml } from "../lib/sanitizeHtml";
 
 interface Section {
   id: string;
@@ -957,7 +958,7 @@ const CustomHtmlSection = ({ content }: { content: any }) => {
           </div>
         )}
         <div 
-          dangerouslySetInnerHTML={{ __html: content.html_content || '' }} 
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(content.html_content) }}
           className="mx-auto font-sans text-slate-600 leading-relaxed"
         />
       </div>
