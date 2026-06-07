@@ -19,12 +19,14 @@ El proyecto se encuentra en una etapa funcional avanzada. La aplicacion ya cuent
 
 Ultimos cambios consolidados:
 
-- Publicacion del repositorio limpio en GitHub, sin el historial que contenia secretos locales.
-- Eliminacion de la referencia rota al submodulo `EduWanka-Aula`.
-- Exclusión del archivo local `.cursor/mcp.json`, que contiene configuracion sensible del entorno.
-- Consolidacion de modulos tipo aula virtual: secciones, items, cuestionarios, examenes sustitutorios y tareas.
+- Arquitectura multi-tenant: cada institucion opera como un tenant aislado (subdominio propio, branding, datos scopeados por `tenant_id`).
+- Registro de cuentas y recuperacion de contraseña (registro, forgot-password, reset-password) para estudiantes.
+- Integracion de pasarela de pagos MercadoPago (preferencias de pago y webhook de confirmacion).
+- Sistema de auditoria (`audit_logs`): registro de creaciones/cambios/eliminaciones en modelos sensibles (usuarios, cursos, compras).
+- Consolidacion de modulos tipo aula virtual: modulos, secciones, items, cuestionarios, examenes sustitutorios y tareas.
 - Ampliacion de flujos para admin, profesor, estudiante y superadmin.
 - Integracion de gestion de certificados, compras, asistencia y progreso de contenido.
+- Auditoria de seguridad completa del sistema (ver seccion "Auditoria y Seguridad" mas abajo).
 
 ## Stack Tecnico
 
@@ -44,8 +46,8 @@ Ultimos cambios consolidados:
 EduWanka/
 ├── backend/          # API Laravel, modelos, controladores, rutas, migraciones y tests
 ├── frontend/         # SPA React/Vite/TypeScript
-├── Documentacion/    # Arquitectura, planificacion, sprints, QA, runbooks y auditorias
-├── Pruebas/          # Evidencias y materiales de prueba
+├── Documentacion/    # Analisis, diseno, reportes y auditorias del sistema
+├── eduwanka.sql      # Dump de base de datos de referencia (no se versiona, ver .gitignore)
 ├── openapi.yaml      # Contrato OpenAPI base
 ├── iniciar-eduwanka.bat
 └── README.md
@@ -145,22 +147,45 @@ POST   /aula/courses/{course}/modules
 POST   /aula/questionnaires/{questionnaire}/submit
 POST   /aula/substitute-exams/{substituteExam}/submit
 POST   /aula/assignments/{assignment}/submit
+
+POST   /auth/register
+POST   /auth/forgot-password
+POST   /auth/reset-password
+POST   /payments/mercadopago/webhook
 ```
 
 El contrato base esta en `openapi.yaml`; las rutas completas viven en `backend/routes/api.php`.
 
 ## Modulos Funcionales
 
-- Autenticacion con Sanctum y proteccion por roles.
+- Autenticacion con Sanctum (login, registro, recuperacion de contraseña) y proteccion por roles.
+- Arquitectura multi-tenant: instituciones aisladas por `tenant_id`, con branding y dominio propios.
 - Catalogo publico de cursos y docentes.
-- Flujo de compra e inscripcion.
+- Flujo de compra e inscripcion, con pasarela de pagos MercadoPago (preferencias y webhook).
 - Aula del estudiante con cursos, materiales, progreso, tareas y evaluaciones.
 - Administracion de cursos, docentes, usuarios, participantes y pagos.
 - Gestion de asistencia para admin y profesor.
 - Certificados, plantillas, previsualizacion, emision y verificacion.
 - Panel de profesor con cursos, estudiantes, materiales, perfil y certificados.
-- Panel de superadmin con usuarios y metricas.
+- Panel de superadmin con usuarios, tenants y metricas globales.
 - Modulos tipo Moodle: modulos, secciones, items, cuestionarios, examenes sustitutorios y tareas.
+- Registro de auditoria (`audit_logs`) de cambios sobre modelos sensibles.
+- Libro de Reclamaciones (en migracion de prototipo local a backend — ver plan de correcciones).
+
+## Auditoria y Seguridad
+
+El sistema cuenta con una auditoria tecnica completa (backend, base de datos, frontend, configuracion y despliegue), con hallazgos clasificados por severidad y un plan de correccion en fases:
+
+- [`Documentacion/AUDITORIA_COMPLETA_SISTEMA_2026-06.md`](Documentacion/AUDITORIA_COMPLETA_SISTEMA_2026-06.md) — informe completo con hallazgos, ubicacion exacta (`archivo:linea`) y severidad.
+- [`Documentacion/PLAN_CORRECCIONES_AUDITORIA_Y_LIBRO_RECLAMACIONES.md`](Documentacion/PLAN_CORRECCIONES_AUDITORIA_Y_LIBRO_RECLAMACIONES.md) — plan de correccion por fases (critico → alta → media prioridad), incluyendo el diseño de base de datos del Libro de Reclamaciones.
+
+Buenas practicas de configuracion local:
+
+- No subir archivos `.env` (backend y frontend ya estan en `.gitignore`).
+- No subir `.cursor/mcp.json` ni las carpetas `.cursor/`/`.claude/`; contienen configuraciones locales, historiales y pueden incluir claves.
+- Mantener secretos en variables de entorno o en un gestor de secretos; nunca hardcodearlos en el codigo.
+- Revisar cualquier credencial expuesta antes de publicar cambios (`git status`, `git diff --cached`).
+- Las rutas sensibles usan autenticacion Sanctum, roles (`role:` middleware) y throttling en backend — revisa la auditoria antes de exponer nuevos endpoints.
 
 ## Pruebas
 
@@ -179,29 +204,16 @@ npm run lint
 npm run build
 ```
 
-La documentacion historica de QA y sprints esta en `Documentacion/04_Pruebas_y_QA/` y `Documentacion/03_Desarrollo_Sprints/`.
-
-## Seguridad y Configuracion
-
-- No subir archivos `.env`.
-- No subir `.cursor/mcp.json`; contiene configuraciones locales y puede incluir claves.
-- Mantener secretos en variables de entorno o en un gestor de secretos.
-- Revisar cualquier credencial expuesta antes de publicar cambios.
-- Las rutas sensibles usan autenticacion Sanctum, roles y throttling en backend.
-
 ## Documentacion
 
-La documentacion extendida esta organizada por etapas:
+La carpeta `Documentacion/` reune los analisis, diseños, reportes y auditorias del proyecto:
 
 ```text
 Documentacion/
-├── 00_Especificaciones_SDD_Estado_del_arte/
-├── 01_Inicial_y_Arquitectura/
-├── 02_Planificacion_y_Fases/
-├── 03_Desarrollo_Sprints/
-├── 04_Pruebas_y_QA/
-├── 05_Guias_y_Operaciones/
-└── 06_Auditorias_y_Cierre/
+├── ANALISIS_MIGRACION_FRONTEND.md
+├── AUDITORIA_COMPLETA_SISTEMA_2026-06.md
+├── DESIGN.md
+├── PLAN_CORRECCIONES_AUDITORIA_Y_LIBRO_RECLAMACIONES.md
+├── REPORTE_SITIO.md
+└── páginawebinfo.md
 ```
-
-Para operacion local, revisa tambien `Documentacion/05_Guias_y_Operaciones/RUNBOOK.md`.
