@@ -1,0 +1,120 @@
+openapi: 3.0.0
+info:
+  title: EduWanka API
+  description: API interna para el sistema de Aula Virtual EduWanka
+  version: "1.0.0"
+servers:
+  - url: http://eduwanka.test/api/v1
+    description: Servidor de desarrollo local
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Sanctum
+
+security:
+  - bearerAuth: []
+
+paths:
+  /auth/login:
+    post:
+      summary: Autenticar usuario
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: student@eduwanka.local
+                password:
+                  type: string
+                  example: Password123!
+      responses:
+        '200':
+          description: Autenticación exitosa
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  user:
+                    type: object
+        '401':
+          description: Credenciales inválidas
+
+  /aula/student-data:
+    get:
+      summary: Obtener datos del estudiante
+      description: Retorna compras, cursos, certificados y exámenes del usuario autenticado (Rol student)
+      responses:
+        '200':
+          description: Datos obtenidos
+        '403':
+          description: No autorizado (Rol incorrecto)
+
+  /aula/professor-data:
+    get:
+      summary: Obtener datos del profesor
+      description: Retorna cursos asignados, exámenes de alumnos y métricas (Rol prof/superadmin)
+      responses:
+        '200':
+          description: Datos obtenidos
+        '403':
+          description: No autorizado
+
+  /aula/admin-data:
+    get:
+      summary: Obtener datos del administrador
+      description: Retorna pagos pendientes, y conteo global de usuarios (Rol admin/superadmin)
+      responses:
+        '200':
+          description: Datos obtenidos
+        '403':
+          description: No autorizado
+
+  /aula/superadmin-data:
+    get:
+      summary: Obtener datos del superadmin
+      description: Retorna flujos financieros, métricas completas y auditoría de transacciones (Rol superadmin)
+      responses:
+        '200':
+          description: Datos obtenidos
+        '403':
+          description: No autorizado
+
+  /payments/{purchase}/status:
+    post:
+      summary: Validar o transicionar estado de pago
+      parameters:
+        - in: path
+          name: purchase
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                new_status:
+                  type: string
+                  enum: [pending_validation, validated, rejected, pending_payment, paid]
+                reason:
+                  type: string
+      responses:
+        '200':
+          description: Estado transicionado y auditado
+        '422':
+          description: Transición inválida en la máquina de estados
+        '403':
+          description: No autorizado

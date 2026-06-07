@@ -1,0 +1,35 @@
+﻿.env
+*.sql
+.cursor/mcp.json
+
+# Legacy folders - too large and not maintained
+/Aula\ CAJ/
+/Sistema\ Legado/
+node_modules
+
+# Dependencias (reconstruibles con composer install / npm install)
+/backend/vendor/
+/frontend/node_modules/
+
+# Builds y artefactos generados
+/frontend/dist/
+/backend/public/spa/
+
+# Storage de Laravel (logs, cache, archivos subidos por usuarios reales)
+/backend/storage/app/public/*
+!/backend/storage/app/public/.gitignore
+/backend/storage/framework/cache/*
+/backend/storage/framework/sessions/*
+/backend/storage/framework/views/*
+/backend/storage/logs/*
+!/backend/storage/framework/cache/.gitignore
+!/backend/storage/framework/sessions/.gitignore
+!/backend/storage/framework/views/.gitignore
+!/backend/storage/logs/.gitignore
+
+# Configuracion de IDEs / herramientas (cache local, historial de chat, etc.)
+/.cursor/
+/.claude/
+
+# Salidas/artefactos generados localmente
+/outputs/

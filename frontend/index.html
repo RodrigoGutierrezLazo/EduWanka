@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/spa/Logo.ico" />
+    <title>EduWanka | Excelencia Académica</title>
+    <script>
+      (function() {
+        try {
+          const cacheKey = 'tenant_colors_' + window.location.hostname;
+          const cached = localStorage.getItem(cacheKey);
+          if (cached) {
+            const data = JSON.parse(cached);
+            if (data && data.primary_color) {
+              const root = document.documentElement;
+              root.style.setProperty('--color-primary', data.primary_color);
+              if (data.primary_color_dark) {
+                root.style.setProperty('--color-primary-dark', data.primary_color_dark);
+              }
+              if (data.secondary_color) {
+                root.style.setProperty('--color-secondary', data.secondary_color);
+                root.style.setProperty('--color-accent', data.secondary_color);
+              }
+              if (data.name) {
+                document.title = data.name + ' | Aula Virtual';
+              }
+            }
+          }
+        } catch (e) {
+          console.error('Failed to load cached theme', e);
+        }
+      })();
+    </script>
+    <meta name="description" content="EduWanka es una plataforma líder en formación académica y profesional, ofreciendo cursos certificados de alta calidad para impulsar tu carrera." />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://eduwanka.edu.pe/" />
+    <meta property="og:title" content="EduWanka | Excelencia Académica" />
+    <meta property="og:description" content="EduWanka es una plataforma líder en formación académica y profesional, ofreciendo cursos certificados de alta calidad para impulsar tu carrera." />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:title" content="EduWanka | Excelencia Académica" />
+    <meta property="twitter:description" content="EduWanka es una plataforma líder en formación académica y profesional, ofreciendo cursos certificados de alta calidad para impulsar tu carrera." />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

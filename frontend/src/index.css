@@ -1,0 +1,219 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600;1,700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-serif: "Playfair Display", Georgia, serif;
+
+  --color-primary: #0F172A; /* Slate 900 loading default */
+  --color-primary-dark: #020617; /* Slate 950 loading default */
+  --color-secondary: #475569; /* Slate 600 */
+  --color-accent: #64748B; /* Slate 500 */
+  --color-bg-soft: #E7E1D6; /* Crema andino */
+  --color-earth: #5A4636; /* Marrón tierra */
+
+  --color-surface: #FFFFFF;
+  --color-surface-dim: #E7E1D6;
+  --color-on-surface: #222222;
+  --color-on-surface-variant: #5F5F5F;
+
+  /* Redefinir la paleta naranja para que no use naranjas chillones ni navideños, sino un verde institucional sumamente elegante y profesional */
+  --color-orange-50: #f4faf6;
+  --color-orange-100: #e6f4ea;
+  --color-orange-200: #c2e7cc;
+  --color-orange-300: #93d3a5;
+  --color-orange-400: #5cb77b;
+  --color-orange-500: #2e6f40; /* Verde elegante actua como resalte de accion/pendiente */
+  --color-orange-600: #235631;
+  --color-orange-700: #183c22;
+  --color-orange-800: #0f2515;
+  --color-orange-900: #08130b;
+
+  /* Redefinir la paleta ámbar */
+  --color-amber-50: #f4faf6;
+  --color-amber-100: #e6f4ea;
+  --color-amber-200: #c2e7cc;
+  --color-amber-300: #93d3a5;
+  --color-amber-400: #5cb77b;
+  --color-amber-500: #2e6f40;
+  --color-amber-600: #235631;
+  --color-amber-700: #183c22;
+  --color-amber-800: #0f2515;
+  --color-amber-900: #08130b;
+}
+
+@layer base {
+  body {
+    @apply bg-surface text-on-surface font-sans antialiased scroll-smooth;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display tracking-tight;
+  }
+
+  button, nav {
+    @apply font-sans;
+  }
+}
+
+@layer components {
+  .btn-pill {
+    @apply rounded-full px-8 py-4 transition-all duration-300 uppercase tracking-widest text-sm font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0;
+  }
+
+  .shadow-soft {
+    box-shadow: 0 4px 20px rgba(122, 15, 31, 0.05);
+  }
+
+  .shadow-hover {
+    box-shadow: 0 10px 40px rgba(122, 15, 31, 0.1);
+  }
+
+  /* Asymmetric border for "pestañas" */
+  .tab-geometry {
+    border-radius: 2rem 0 2rem 0;
+  }
+
+  .aula-sidebar-scrollbar {
+    scrollbar-color: #C8A14A rgba(255, 255, 255, 0.08);
+    scrollbar-width: thin;
+    scrollbar-gutter: stable;
+  }
+
+  .aula-sidebar-scrollbar::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  .aula-sidebar-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 999px;
+  }
+
+  .aula-sidebar-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #dfba65 0%, #C8A14A 100%);
+    border: 2px solid #7A0F1F;
+    border-radius: 999px;
+  }
+
+  .aula-sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #e4bd4e 0%, #b08a3b 100%);
+  }
+
+  .aula-sidebar-scrollbar::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  /* Red granate sidebar scrollbar */
+  .aula-sidebar-scrollbar-red {
+    scrollbar-color: rgba(255, 255, 255, 0.25) rgba(255, 255, 255, 0.06);
+    scrollbar-width: thin;
+    scrollbar-gutter: stable;
+  }
+
+  .aula-sidebar-scrollbar-red::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .aula-sidebar-scrollbar-red::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 999px;
+  }
+
+  .aula-sidebar-scrollbar-red::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(200,161,74,0.5) 100%);
+    border: 2px solid var(--color-primary-dark, rgba(122, 15, 31, 0.6));
+    border-radius: 999px;
+  }
+
+  .aula-sidebar-scrollbar-red::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(200,161,74,0.7) 100%);
+  }
+
+  .aula-sidebar-scrollbar-red::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  .custom-scrollbar {
+    scrollbar-color: #C8A14A transparent;
+    scrollbar-width: thin;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #C8A14A;
+    border-radius: 10px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #dfba65;
+  }
+
+  .eduwanka-scrollbar {
+    scrollbar-color: #C8A14A rgba(200, 161, 74, 0.1);
+    scrollbar-width: thin;
+  }
+
+  .eduwanka-scrollbar::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+  }
+
+  .eduwanka-scrollbar::-webkit-scrollbar-track {
+    background: rgba(200, 161, 74, 0.08);
+    border-radius: 9999px;
+  }
+
+  .eduwanka-scrollbar::-webkit-scrollbar-thumb {
+    background: #C8A14A;
+    border-radius: 9999px;
+  }
+
+  .eduwanka-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #dfba65;
+  }
+
+  .brand-logo {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+
+  .brand-logo__edu {
+    color: var(--color-primary);
+  }
+
+  .brand-logo__wanka {
+    color: var(--color-secondary);
+  }
+
+  .brand-logo__accent {
+    width: 9px;
+    height: 9px;
+    margin: 0 7px;
+    background-color: var(--color-accent);
+    transform: rotate(45deg);
+    display: inline-block;
+  }
+
+  .brand-logo:hover {
+    opacity: 0.9;
+  }
+}
+
