@@ -122,4 +122,79 @@ class TenantIsolationTest extends TestCase
         $response->assertStatus(403);
         $response->assertJsonFragment(['error' => 'This institution has been suspended.']);
     }
+
+    public function test_user_cannot_spoof_a_different_tenant_via_header(): void
+    {
+        $tenantA = Tenant::create([
+            'name' => 'Colegio A',
+            'slug' => 'colegio-a',
+            'status' => 'active',
+        ]);
+
+        $tenantB = Tenant::create([
+            'name' => 'Colegio B',
+            'slug' => 'colegio-b',
+            'status' => 'active',
+        ]);
+
+        // Usuario pertenece al tenant A, pero envía el header del tenant B
+        $user = User::factory()->create([
+            'role' => 'student',
+            'tenant_id' => $tenantA->id,
+        ]);
+
+        $response = $this->actingAs($user)
+            ->withHeader('X-Tenant-Slug', $tenantB->slug)
+            ->getJson('/api/v1/aula/student-data');
+
+        $response->assertStatus(403);
+        $response->assertJsonFragment(['message' => 'Forbidden']);
+    }
+
+    public function test_user_can_access_with_their_own_tenant_header(): void
+    {
+        $tenantA = Tenant::create([
+            'name' => 'Colegio A',
+            'slug' => 'colegio-a',
+            'status' => 'active',
+        ]);
+
+        $user = User::factory()->create([
+            'role' => 'student',
+            'tenant_id' => $tenantA->id,
+        ]);
+
+        $response = $this->actingAs($user)
+            ->withHeader('X-Tenant-Slug', $tenantA->slug)
+            ->getJson('/api/v1/aula/student-data');
+
+        $response->assertStatus(200);
+    }
+
+    public function test_superadmin_can_cross_tenants_without_being_blocked(): void
+    {
+        $tenantA = Tenant::create([
+            'name' => 'Colegio A',
+            'slug' => 'colegio-a',
+            'status' => 'active',
+        ]);
+
+        $tenantB = Tenant::create([
+            'name' => 'Colegio B',
+            'slug' => 'colegio-b',
+            'status' => 'active',
+        ]);
+
+        // El superadmin pertenece al tenant A pero consulta datos del tenant B
+        $superadmin = User::factory()->create([
+            'role' => 'superadmin',
+            'tenant_id' => $tenantA->id,
+        ]);
+
+        $response = $this->actingAs($superadmin)
+            ->withHeader('X-Tenant-Slug', $tenantB->slug)
+            ->getJson('/api/v1/aula/access');
+
+        $response->assertStatus(200);
+    }
 }

@@ -103,7 +103,7 @@ Route::prefix('v1')->group(function (): void {
             ->middleware('throttle:5,1')
             ->name('api.v1.auth.reset-password');
 
-        Route::middleware('auth:sanctum')->group(function (): void {
+        Route::middleware(['auth:sanctum', 'tenant.verify'])->group(function (): void {
             Route::get('/me', MeController::class)->name('api.v1.auth.me');
             Route::post('/logout', LogoutController::class)->name('api.v1.auth.logout');
         });
@@ -118,7 +118,7 @@ Route::prefix('v1')->group(function (): void {
         ->name('api.v1.payments.mercadopago.webhook');
 
     // Rutas de datos (GET): límite alto para soportar refetch automático de dashboards
-    Route::middleware(['auth:sanctum', 'throttle:200,1'])->group(function () {
+    Route::middleware(['auth:sanctum', 'tenant.verify', 'throttle:200,1'])->group(function () {
         Route::middleware('role:admin,superadmin')->group(function () {
             Route::get('/aula/admin-data', [\App\Http\Controllers\Api\V1\Aula\AdminDataController::class, 'index'])->name('api.v1.aula.admin-data');
             Route::get('/admin/ping', AdminPingController::class)->name('api.v1.admin.ping');
@@ -234,14 +234,14 @@ Route::prefix('v1')->group(function (): void {
     });
 
     // Rutas de acción (POST/mutaciones): límite estricto para prevenir abuso
-    Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
+    Route::middleware(['auth:sanctum', 'tenant.verify', 'throttle:60,1'])->group(function () {
         Route::middleware('role:admin,superadmin')->group(function () {
             Route::post('/payments/{purchase}/status', \App\Http\Controllers\Api\V1\Payments\TransitionPurchaseStatusController::class)->name('api.v1.payments.transition');
             Route::post('/admin/purchases/{purchase}/shipping-status', [\App\Http\Controllers\Api\V1\Admin\AdminPaymentsController::class, 'updateShippingStatus'])->name('api.v1.admin.purchases.shipping-status');
         });
     });
 
-    Route::middleware(['auth:sanctum', 'role:prof,admin,superadmin'])->group(function (): void {
+    Route::middleware(['auth:sanctum', 'tenant.verify', 'role:prof,admin,superadmin'])->group(function (): void {
         Route::get('/prof/ping', ProfPingController::class)->name('api.v1.prof.ping');
     });
 
@@ -250,7 +250,7 @@ Route::prefix('v1')->group(function (): void {
         ->middleware('throttle:20,1')
         ->name('api.v1.certificates.verify');
 
-    Route::middleware('auth:sanctum')->group(function (): void {
+    Route::middleware(['auth:sanctum', 'tenant.verify'])->group(function (): void {
         Route::get('/aula/access', AulaAccessController::class)->name('api.v1.aula.access');
         Route::get('/aula/student-data', [\App\Http\Controllers\Api\V1\Aula\StudentDataController::class, 'index'])->name('api.v1.aula.student-data');
         Route::get('/aula/my-courses', [\App\Http\Controllers\Api\V1\Aula\StudentDataController::class, 'myCourses'])->name('api.v1.aula.my-courses');
@@ -269,7 +269,7 @@ Route::prefix('v1')->group(function (): void {
     });
 
     // ─── Sprint 11: Módulos tipo Moodle (admin + profesor) ────────────────
-    Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware(['auth:sanctum', 'tenant.verify'])->group(function () {
         Route::prefix('aula')->name('api.v1.aula.modules.')->group(function () {
             // Módulos
             Route::get('/courses/{course}/modules', [ModuleManagementController::class, 'modules'])->name('index');

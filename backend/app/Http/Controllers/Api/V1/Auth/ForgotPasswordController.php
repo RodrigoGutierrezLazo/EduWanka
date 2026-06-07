@@ -33,21 +33,6 @@ class ForgotPasswordController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Error al enviar correo de restablecimiento: ' . $e->getMessage());
-            
-            // Recuperar el usuario para generar el token manual y loguearlo
-            $user = \App\Models\User::where('email', $request->email)->first();
-            if ($user) {
-                $token = Password::broker()->createToken($user);
-                Log::info("TOKEN DE RESTABLECIMIENTO GENERADO (Log): {$token} para el correo {$request->email}");
-                
-                if (app()->isLocal() || config('app.debug')) {
-                    return response()->json([
-                        'message' => 'Simulación: Enlace generado (ver logs del backend).',
-                        'token' => $token,
-                        'email' => $request->email,
-                    ]);
-                }
-            }
 
             return response()->json([
                 'message' => 'La solicitud fue procesada, pero el servidor de correo no está disponible.'

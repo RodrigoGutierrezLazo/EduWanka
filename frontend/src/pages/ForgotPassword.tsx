@@ -10,7 +10,6 @@ export default function ForgotPassword() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [message, setMessage] = useState("");
-  const [localTokenInfo, setLocalTokenInfo] = useState<{ token: string; email: string } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,11 +20,6 @@ export default function ForgotPassword() {
       const { data } = await apiClient.post("/api/v1/auth/forgot-password", { email });
       setSuccess(true);
       setMessage(data.message || "Te hemos enviado un enlace para restablecer tu contraseña.");
-      
-      // En desarrollo local, capturamos el token retornado para facilitar el testing
-      if (data.token) {
-        setLocalTokenInfo({ token: data.token, email: data.email });
-      }
     } catch (err: any) {
       setError(
         err?.response?.data?.message ||
@@ -70,20 +64,7 @@ export default function ForgotPassword() {
                 </div>
               </div>
 
-              {localTokenInfo && (
-                <div className="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl text-left text-xs font-mono space-y-2">
-                  <p className="font-bold uppercase tracking-wider font-sans">Simulación de Desarrollo Local:</p>
-                  <p>Dado que no se ha configurado un SMTP real, puedes usar este enlace directo para restablecer la contraseña en local:</p>
-                  <Link 
-                    to={`/reset-password?token=${localTokenInfo.token}&email=${encodeURIComponent(localTokenInfo.email)}`}
-                    className="block text-secondary underline hover:text-primary break-all mt-1"
-                  >
-                    /reset-password?token={localTokenInfo.token}&email={localTokenInfo.email}
-                  </Link>
-                </div>
-              )}
-
-              <Link 
+              <Link
                 to="/login"
                 className="btn-pill w-full bg-primary text-white flex items-center justify-center"
               >

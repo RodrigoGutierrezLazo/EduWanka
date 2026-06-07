@@ -117,12 +117,15 @@ class RegisterAndRecoveryTest extends TestCase
 
         $forgotResponse->assertStatus(200);
         $message = $forgotResponse->json('message');
-        
+
         $this->assertTrue(
-            str_contains($message, 'enlace') || 
-            str_contains($message, 'Simulación') || 
+            str_contains($message, 'enlace') ||
+            str_contains($message, 'Simulación') ||
             str_contains($message, 'servidor de correo')
         );
+
+        // El token de restablecimiento nunca debe viajar en la respuesta JSON
+        $this->assertArrayNotHasKey('token', $forgotResponse->json());
 
         // 3. Generar token real (usando el broker de Laravel para evitar fallos de SMTP fakes)
         $token = Password::broker()->createToken($user);
@@ -148,5 +151,26 @@ class RegisterAndRecoveryTest extends TestCase
 
         $loginResponse->assertOk()
             ->assertJsonStructure(['data' => ['token']]);
+    }
+
+    public function test_forgot_password_never_leaks_token_when_mail_sending_fails(): void
+    {
+        User::factory()->create([
+            'email' => 'leak.check@example.test',
+            'tenant_id' => $this->tenant->id,
+        ]);
+
+        // Forzar el camino del catch (fallo al enviar el correo) que antes filtraba el token
+        Password::shouldReceive('broker')
+            ->andThrow(new \Exception('SMTP no disponible (simulado)'));
+
+        $response = $this->withHeader('X-Tenant-Slug', 'eduwanka-academy')
+            ->postJson('/api/v1/auth/forgot-password', [
+                'email' => 'leak.check@example.test',
+            ]);
+
+        $response->assertStatus(200);
+        $this->assertArrayNotHasKey('token', $response->json());
+        $this->assertArrayNotHasKey('email', $response->json());
     }
 }
