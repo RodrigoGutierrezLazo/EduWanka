@@ -67,6 +67,40 @@ class AulaPurchaseTest extends TestCase
         $this->assertSame('EduWanka', $purchase->certification_institution);
     }
 
+    public function test_authenticated_purchase_ignores_client_supplied_amount_and_uses_course_price(): void
+    {
+        Storage::fake('public');
+
+        $student = User::factory()->create([
+            'role' => 'student',
+            'email' => 'student.tamper@example.test',
+        ]);
+        $course = Course::factory()->create([
+            'code' => 'TAMPER-101',
+            'price' => 350,
+            'is_published' => true,
+        ]);
+
+        Sanctum::actingAs($student);
+
+        $response = $this->postJson('/api/v1/aula/purchases', [
+            'course_id' => $course->id,
+            'amount' => 1, // Intento de manipular el monto de un curso de S/ 350
+            'currency' => 'PEN',
+            'payment_method' => 'proof',
+            'idempotency_key' => 'aula-tamper-001',
+            'receipt' => UploadedFile::fake()->create('voucher-tamper.jpg', 100, 'image/jpeg'),
+        ]);
+
+        $response->assertCreated();
+
+        $purchase = Purchase::query()->where('idempotency_key', 'aula-tamper-001')->first();
+
+        $this->assertNotNull($purchase);
+        $this->assertSame(350, $purchase->amount);
+        $this->assertNotEquals(1, $purchase->amount);
+    }
+
     public function test_authenticated_student_cannot_duplicate_active_course_purchase(): void
     {
         Storage::fake('public');

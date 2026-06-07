@@ -42,7 +42,6 @@ class RegisterPurchaseController extends Controller
 
             // Curso e identificadores
             'course_code'      => ['required', 'string', 'max:120'],
-            'amount'           => ['required', 'integer', 'min:1'],
             'currency'         => ['required', 'string', 'size:3'],
             'idempotency_key'  => ['required', 'string', 'max:120'],
 
@@ -125,8 +124,15 @@ class RegisterPurchaseController extends Controller
             }
         }
 
-        // Resolver course_id desde el course_code si existe
-        $courseId = Course::query()->where('code', strtoupper($validated['course_code']))->value('id');
+        // Resolver el curso desde el course_code: el precio SIEMPRE se calcula en servidor,
+        // nunca se confía en el monto enviado por el cliente (evita manipulación del importe).
+        $course = Course::query()->where('code', strtoupper($validated['course_code']))->first();
+
+        if (! $course) {
+            throw ValidationException::withMessages([
+                'course_code' => ['No encontramos un curso con ese código.'],
+            ]);
+        }
 
         // Estado inicial según método
         if ($validated['payment_method'] === 'proof') {
@@ -141,9 +147,9 @@ class RegisterPurchaseController extends Controller
 
         $purchase = Purchase::query()->create([
             'user_id'              => $user->id,
-            'course_id'            => $courseId,
+            'course_id'            => $course->id,
             'course_code'          => strtoupper($validated['course_code']),
-            'amount'               => $validated['amount'],
+            'amount'               => (int) round($course->price),
             'currency'             => strtoupper($validated['currency']),
             'payment_method'       => $validated['payment_method'],
             'payment_provider'     => $paymentProvider,
@@ -224,7 +230,6 @@ class RegisterPurchaseController extends Controller
                 'integer',
                 Rule::exists('courses', 'id')->where('is_published', true),
             ],
-            'amount'           => ['required', 'integer', 'min:1'],
             'currency'         => ['required', 'string', 'size:3'],
             'idempotency_key'  => ['required', 'string', 'max:120'],
 
@@ -296,7 +301,7 @@ class RegisterPurchaseController extends Controller
             'user_id'              => $user->id,
             'course_id'            => $course->id,
             'course_code'          => strtoupper($courseCode),
-            'amount'               => $validated['amount'],
+            'amount'               => (int) round($course->price),
             'currency'             => strtoupper($validated['currency']),
             'payment_method'       => $validated['payment_method'],
             'payment_provider'     => $paymentProvider,

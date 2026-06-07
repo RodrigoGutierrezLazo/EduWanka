@@ -13,9 +13,13 @@ use Illuminate\Http\Request;
 class AssignmentController extends Controller
 {
     use AuthorizesModuleAccess;
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(['data' => Assignment::all()]);
+        $assignments = Assignment::query()
+            ->whereIn('course_id', $this->authorizedCourseIds($request))
+            ->get();
+
+        return response()->json(['data' => $assignments]);
     }
 
     public function show(Request $request, Assignment $assignment): JsonResponse

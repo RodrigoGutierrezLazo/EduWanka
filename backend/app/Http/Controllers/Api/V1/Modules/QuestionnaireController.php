@@ -16,7 +16,13 @@ class QuestionnaireController extends Controller
     use AuthorizesModuleAccess;
     public function index(Request $request): JsonResponse
     {
-        $questionnaires = Questionnaire::with('questions.options')->get();
+        $questionnaires = Questionnaire::query()
+            ->with('questions.options')
+            ->whereIn('course_id', $this->authorizedCourseIds($request))
+            ->get();
+
+        $this->hideAnswerKeyFromStudents($request, $questionnaires);
+
         return response()->json(['data' => $questionnaires]);
     }
 
@@ -24,6 +30,7 @@ class QuestionnaireController extends Controller
     {
         $this->authorizedCourse($request, $questionnaire->course);
         $questionnaire->load('questions.options');
+        $this->hideAnswerKeyFromStudents($request, $questionnaire);
         return response()->json(['data' => $questionnaire]);
     }
 

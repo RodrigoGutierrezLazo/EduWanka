@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Purchases;
 
+use App\Models\Course;
 use App\Models\Purchase;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -13,6 +14,18 @@ class RegisterPurchaseTest extends TestCase
 {
     use RefreshDatabase;
 
+    private Course $course;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->course = Course::factory()->create([
+            'code' => 'EDUWANKA-MVP',
+            'price' => 500.00,
+        ]);
+    }
+
     public function test_register_purchase_with_proof_creates_pending_validation_record(): void
     {
         Storage::fake('public');
@@ -22,7 +35,6 @@ class RegisterPurchaseTest extends TestCase
             'email' => 'ana.student@example.test',
             'password' => 'Secret123!',
             'course_code' => 'EDUWANKA-MVP',
-            'amount' => 12000,
             'currency' => 'PEN',
             'payment_method' => 'proof',
             'idempotency_key' => 'idem-proof-001',
@@ -47,6 +59,54 @@ class RegisterPurchaseTest extends TestCase
         $this->assertNotNull($purchase);
         $this->assertNotNull($purchase->receipt_path);
         Storage::disk('public')->assertExists($purchase->receipt_path);
+
+        // El monto se calcula siempre desde el precio del curso, nunca desde el cliente
+        $this->assertEquals((int) round($this->course->price), $purchase->amount);
+    }
+
+    public function test_register_purchase_ignores_client_supplied_amount_and_uses_course_price(): void
+    {
+        Storage::fake('public');
+
+        $response = $this->postJson('/api/v1/checkout/register-purchase', [
+            'name' => 'Manipulador',
+            'email' => 'manipulador@example.test',
+            'password' => 'Secret123!',
+            'course_code' => 'EDUWANKA-MVP',
+            'amount' => 1, // Intento de manipular el monto de un curso de S/ 500
+            'currency' => 'PEN',
+            'payment_method' => 'proof',
+            'idempotency_key' => 'idem-tamper-001',
+            'receipt' => UploadedFile::fake()->create('voucher-tamper.jpg', 100, 'image/jpeg'),
+        ]);
+
+        $response->assertCreated();
+
+        $purchase = Purchase::query()->where('idempotency_key', 'idem-tamper-001')->first();
+
+        $this->assertNotNull($purchase);
+        $this->assertEquals((int) round($this->course->price), $purchase->amount);
+        $this->assertNotEquals(1, $purchase->amount);
+    }
+
+    public function test_register_purchase_rejects_unknown_course_code(): void
+    {
+        Storage::fake('public');
+
+        $response = $this->postJson('/api/v1/checkout/register-purchase', [
+            'name' => 'Sin Curso',
+            'email' => 'sin.curso@example.test',
+            'password' => 'Secret123!',
+            'course_code' => 'NO-EXISTE-999',
+            'currency' => 'PEN',
+            'payment_method' => 'proof',
+            'idempotency_key' => 'idem-no-course-001',
+            'receipt' => UploadedFile::fake()->create('voucher-no-course.jpg', 100, 'image/jpeg'),
+        ]);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['course_code']);
     }
 
     public function test_register_purchase_with_proof_requires_receipt_file(): void
@@ -56,7 +116,6 @@ class RegisterPurchaseTest extends TestCase
             'email' => 'ana.no-proof@example.test',
             'password' => 'Secret123!',
             'course_code' => 'EDUWANKA-MVP',
-            'amount' => 12000,
             'currency' => 'PEN',
             'payment_method' => 'proof',
             'idempotency_key' => 'idem-proof-002',
@@ -84,7 +143,6 @@ class RegisterPurchaseTest extends TestCase
             'email' => 'luis.mp@example.test',
             'password' => 'Secret123!',
             'course_code' => 'EDUWANKA-MVP',
-            'amount' => 12000,
             'currency' => 'PEN',
             'payment_method' => 'mercadopago',
             'idempotency_key' => 'idem-mp-001',
@@ -108,7 +166,6 @@ class RegisterPurchaseTest extends TestCase
             'email' => 'luis.mp.no-keys@example.test',
             'password' => 'Secret123!',
             'course_code' => 'EDUWANKA-MVP',
-            'amount' => 12000,
             'currency' => 'PEN',
             'payment_method' => 'mercadopago',
             'idempotency_key' => 'idem-mp-no-keys-001',
@@ -133,7 +190,6 @@ class RegisterPurchaseTest extends TestCase
             'email' => 'existing.student@example.test',
             'password' => 'WrongSecret123!',
             'course_code' => 'EDUWANKA-MVP',
-            'amount' => 12000,
             'currency' => 'PEN',
             'payment_method' => 'proof',
             'idempotency_key' => 'idem-existing-user-001',
@@ -161,7 +217,6 @@ class RegisterPurchaseTest extends TestCase
             'email' => 'existing.valid@example.test',
             'password' => 'CorrectSecret123!',
             'course_code' => 'EDUWANKA-MVP',
-            'amount' => 12000,
             'currency' => 'PEN',
             'payment_method' => 'proof',
             'idempotency_key' => 'idem-existing-user-002',
@@ -185,7 +240,6 @@ class RegisterPurchaseTest extends TestCase
             'email' => 'repeat.student@example.test',
             'password' => 'Secret123!',
             'course_code' => 'EDUWANKA-MVP',
-            'amount' => 12000,
             'currency' => 'PEN',
             'payment_method' => 'proof',
             'idempotency_key' => 'idem-repeat-001',

@@ -14,15 +14,25 @@ use Illuminate\Http\Request;
 class SubstituteExamController extends Controller
 {
     use AuthorizesModuleAccess;
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(['data' => SubstituteExam::with('questions.options')->get()]);
+        $courseIds = $this->authorizedCourseIds($request);
+
+        $substituteExams = SubstituteExam::query()
+            ->with('questions.options')
+            ->whereHas('originalQuestionnaire', fn ($q) => $q->whereIn('course_id', $courseIds))
+            ->get();
+
+        $this->hideAnswerKeyFromStudents($request, $substituteExams);
+
+        return response()->json(['data' => $substituteExams]);
     }
 
     public function show(Request $request, SubstituteExam $substituteExam): JsonResponse
     {
         $this->authorizedCourse($request, $substituteExam->originalQuestionnaire->course);
-        $substituteExam->load('questions.options', 'originalExam');
+        $substituteExam->load('questions.options', 'originalQuestionnaire');
+        $this->hideAnswerKeyFromStudents($request, $substituteExam);
         return response()->json(['data' => $substituteExam]);
     }
 
@@ -90,9 +100,15 @@ class SubstituteExamController extends Controller
         $user = $request->user();
         $eligible = $this->isEligible($user->id, $substituteExam);
 
+        $substitute = null;
+        if ($eligible) {
+            $substitute = $substituteExam->load('questions.options');
+            $this->hideAnswerKeyFromStudents($request, $substitute);
+        }
+
         return response()->json([
             'eligible'   => $eligible,
-            'substitute' => $eligible ? $substituteExam->load('questions.options') : null,
+            'substitute' => $substitute,
         ]);
     }
 
