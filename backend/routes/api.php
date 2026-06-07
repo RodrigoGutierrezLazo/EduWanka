@@ -115,6 +115,7 @@ Route::prefix('v1')->group(function (): void {
     });
 
     Route::post('/payments/mercadopago/webhook', \App\Http\Controllers\Api\V1\Payments\MercadoPagoWebhookController::class)
+        ->middleware('throttle:30,1')
         ->name('api.v1.payments.mercadopago.webhook');
 
     // Rutas de datos (GET): límite alto para soportar refetch automático de dashboards
