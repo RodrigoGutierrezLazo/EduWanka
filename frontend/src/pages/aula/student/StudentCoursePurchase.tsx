@@ -39,7 +39,7 @@ const BANKS = [
   { id: 'Yape', name: 'Yape', account: '942 899 979', holder: 'EduWanka Academico' },
   { id: 'Plin', name: 'Plin', account: '942 899 979', holder: 'EduWanka Academico' },
   { id: 'presencial', name: 'Pago presencial', account: 'Oficina Huancayo', holder: 'Atencion academica' },
-  { id: 'Culqi', name: 'Tarjeta (Culqi)', account: '-', holder: 'Pago en linea inmediato' },
+  { id: 'MercadoPago', name: 'Mercado Pago (Tarjeta/Banca)', account: '-', holder: 'Pago en línea inmediato' },
 ];
 
 const DELIVERY_COMPANIES = [
@@ -121,7 +121,7 @@ export default function StudentCoursePurchase() {
     : BANKS;
 
   const selectedBank = dynamicBanks.find(bank => bank.id === bankEntity);
-  const isCulqi = bankEntity === 'Culqi';
+  const isMercadoPago = bankEntity === 'MercadoPago';
 
   const certificationOptions = [
     { value: tenantInfo?.name || 'EduWanka', label: tenantInfo?.name || 'EduWanka' },
@@ -145,7 +145,7 @@ export default function StudentCoursePurchase() {
   const validate = (): Record<string, string> => {
     const nextErrors: Record<string, string> = {};
     if (!bankEntity) nextErrors.bankEntity = 'Selecciona un metodo de pago';
-    if (!isCulqi) {
+    if (!isMercadoPago) {
       if (!operationNumber.trim()) nextErrors.operationNumber = 'Ingresa el numero de operacion';
       if (!receipt) nextErrors.receipt = 'Adjunta el comprobante';
     }
@@ -169,13 +169,13 @@ export default function StudentCoursePurchase() {
       fd.append('amount', String(Math.round(Number(declaredAmount) || course.price)));
       fd.append('currency', 'PEN');
       fd.append('idempotency_key', generateIdempotencyKey(course.id));
-      fd.append('payment_method', isCulqi ? 'culqi' : 'proof');
+      fd.append('payment_method', isMercadoPago ? 'mercadopago' : 'proof');
       fd.append('payment_modality', paymentModality);
       fd.append('certification_institution', certificationInstitution);
       fd.append('certificate_delivery', certDelivery);
       fd.append('accepted_terms', '1');
 
-      if (!isCulqi) {
+      if (!isMercadoPago) {
         fd.append('bank_entity', bankEntity);
         fd.append('operation_number', operationNumber.trim());
         fd.append('declared_amount', String(declaredAmount || course.price));
@@ -195,6 +195,11 @@ export default function StudentCoursePurchase() {
       const { data } = await apiClient.post('/api/v1/aula/purchases', fd, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
+
+      if (data?.data?.init_point) {
+        window.location.href = data.data.init_point;
+        return;
+      }
 
       setSuccessId(data?.data?.id ?? 0);
       await Promise.all([
@@ -413,7 +418,7 @@ export default function StudentCoursePurchase() {
               ))}
             </div>
 
-            {selectedBank && !isCulqi && (
+            {selectedBank && !isMercadoPago && (
               <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 space-y-1 text-sm mb-5 flex gap-4 items-start">
                 {selectedBank.logo_path && (
                   <div className="w-12 h-12 bg-white rounded-lg border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
@@ -432,13 +437,13 @@ export default function StudentCoursePurchase() {
               </div>
             )}
 
-            {selectedBank && isCulqi && (
+            {selectedBank && isMercadoPago && (
               <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-800 mb-5">
-                El pago con tarjeta se registrara como pendiente de pago si Culqi esta habilitado.
+                El pago se registrará como pendiente de pago y serás redirigido a Mercado Pago para completar la transacción de forma segura.
               </div>
             )}
 
-            {!isCulqi && bankEntity && (
+            {!isMercadoPago && bankEntity && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="Monto pagado (S/)">
                   <input

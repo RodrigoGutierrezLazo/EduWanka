@@ -39,7 +39,7 @@ const BANKS = [
   { id: 'Yape',         name: 'Yape',                 account: '942 899 979', holder: 'EduWanka Académico' },
   { id: 'Plin',         name: 'Plin',                 account: '942 899 979', holder: 'EduWanka Académico' },
   { id: 'presencial',   name: 'Pago presencial',      account: 'Oficina Huancayo', holder: '—' },
-  { id: 'Culqi',        name: 'Tarjeta (Culqi)',      account: '—', holder: 'Pago en línea inmediato' },
+  { id: 'MercadoPago',  name: 'Mercado Pago (Tarjeta/Banca)', account: '—', holder: 'Pago en línea inmediato' },
 ];
 
 const DELIVERY_COMPANIES = [
@@ -121,7 +121,7 @@ export default function Checkout() {
     : BANKS;
 
   const selectedBank = dynamicBanks.find(b => b.id === bankEntity);
-  const isCulqi = bankEntity === 'Culqi';
+  const isMercadoPago = bankEntity === 'MercadoPago';
   const totalLabel = course?.price_label ?? '—';
 
   const certificationOptions = [
@@ -160,7 +160,7 @@ export default function Checkout() {
     if (!academicCondition) e.academicCondition = 'Selecciona tu condición';
     if (!bankEntity) e.bankEntity = 'Selecciona método de pago';
 
-    if (!isCulqi) {
+    if (!isMercadoPago) {
       if (!operationNumber.trim()) e.operationNumber = 'Ingresa el número de operación';
       if (!receipt) e.receipt = 'Adjunta el comprobante';
     }
@@ -205,10 +205,10 @@ export default function Checkout() {
       fd.append('amount', String(Math.round(Number(declaredAmount) || course.price)));
       fd.append('currency', 'PEN');
       fd.append('idempotency_key', generateIdempotencyKey(course.code ?? String(course.id)));
-      fd.append('payment_method', isCulqi ? 'culqi' : 'proof');
+      fd.append('payment_method', isMercadoPago ? 'mercadopago' : 'proof');
       fd.append('payment_modality', paymentModality);
 
-      if (!isCulqi) {
+      if (!isMercadoPago) {
         fd.append('bank_entity', bankEntity);
         fd.append('operation_number', operationNumber.trim());
         fd.append('declared_amount', String(declaredAmount || course.price));
@@ -227,6 +227,11 @@ export default function Checkout() {
       const { data } = await apiClient.post('/api/v1/checkout/register-purchase', fd, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
+
+      if (data?.data?.init_point) {
+        window.location.href = data.data.init_point;
+        return;
+      }
 
       setSuccessId(data?.data?.id ?? null);
     } catch (err: any) {
@@ -456,7 +461,7 @@ export default function Checkout() {
                 ))}
               </div>
 
-              {selectedBank && !isCulqi && (
+              {selectedBank && !isMercadoPago && (
                 <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-2 text-sm flex gap-4 items-start">
                   {selectedBank.logo_path && (
                     <div className="w-12 h-12 bg-white rounded-lg border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
@@ -475,15 +480,15 @@ export default function Checkout() {
                 </div>
               )}
 
-              {isCulqi && (
+              {isMercadoPago && (
                 <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm">
-                  <p className="font-bold text-blue-900 mb-1">Pago con tarjeta — Culqi</p>
-                  <p className="text-blue-800">Después de registrar tu inscripción serás redirigido al portal de pago seguro Culqi.</p>
+                  <p className="font-bold text-blue-900 mb-1">Pago en línea — Mercado Pago</p>
+                  <p className="text-blue-800">Después de registrar tu inscripción serás redirigido a Mercado Pago para completar tu pago de forma segura.</p>
                 </div>
               )}
 
               {/* Datos del depósito */}
-              {!isCulqi && bankEntity && (
+              {!isMercadoPago && bankEntity && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
                   <Field label="Monto pagado (S/) *" error={errors.declaredAmount}>
                     <input type="number" step="0.01" value={declaredAmount}

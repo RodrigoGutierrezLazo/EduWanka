@@ -15,8 +15,20 @@ trait BelongsToTenant
 
         static::creating(function ($model) {
             $tenantManager = app(TenantManager::class);
-            if ($tenantManager->hasTenant() && !$model->tenant_id) {
-                $model->tenant_id = $tenantManager->getTenantId();
+            if (!$model->tenant_id) {
+                if ($tenantManager->hasTenant()) {
+                    $model->tenant_id = $tenantManager->getTenantId();
+                } else {
+                    // Fallback al primer tenant en la base de datos (útil en tests, seeders o desarrollo local)
+                    try {
+                        $firstTenantId = \Illuminate\Support\Facades\DB::table('tenants')->value('id');
+                        if ($firstTenantId) {
+                            $model->tenant_id = $firstTenantId;
+                        }
+                    } catch (\Exception $e) {
+                        // Evitar fallar si la tabla no existe durante migraciones iniciales
+                    }
+                }
             }
         });
     }

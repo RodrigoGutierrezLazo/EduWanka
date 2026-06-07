@@ -19,6 +19,11 @@ class CourseFactory extends Factory
             'is_published' => true,
             'level' => 'intermedio',
             'duration_weeks' => 10,
+            'tenant_id' => \App\Models\Tenant::first()?->id ?? \App\Models\Tenant::create([
+                'name' => 'Default Test Tenant',
+                'slug' => 'default-test',
+                'status' => 'active',
+            ])->id,
         ];
     }
 }

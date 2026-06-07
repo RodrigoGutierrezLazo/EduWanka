@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Traits\BelongsToTenant;
+use App\Traits\Auditable;
 
 class Purchase extends Model
 {
-    use HasFactory, BelongsToTenant;
+    use HasFactory, BelongsToTenant, Auditable;
 
     public const STATUS_PENDING_VALIDATION = 'pending_validation';
     public const STATUS_VALIDATED = 'validated';

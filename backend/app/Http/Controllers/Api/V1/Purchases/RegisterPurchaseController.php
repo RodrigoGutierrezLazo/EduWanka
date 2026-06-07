@@ -47,7 +47,7 @@ class RegisterPurchaseController extends Controller
             'idempotency_key'  => ['required', 'string', 'max:120'],
 
             // Pago
-            'payment_method'   => ['required', Rule::in(['proof', 'culqi'])],
+            'payment_method'   => ['required', Rule::in(['proof', 'mercadopago'])],
             'payment_modality' => ['nullable', Rule::in(['single', 'installments'])],
             'bank_entity'      => ['nullable', 'string', 'max:50', 'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\s.\-()\/]+$/u'],
             'operation_number' => ['nullable', 'string', 'max:80', 'regex:/^[a-zA-Z0-9\-\s]+$/'],
@@ -76,9 +76,9 @@ class RegisterPurchaseController extends Controller
             ]);
         }
 
-        if ($validated['payment_method'] === 'culqi' && ! $this->canAcceptCulqi()) {
+        if ($validated['payment_method'] === 'mercadopago' && ! $this->canAcceptMercadoPago()) {
             return response()->json([
-                'message' => 'This payment method is not currently available.',
+                'message' => 'El método de pago por Mercado Pago no está disponible actualmente.',
             ], 422);
         }
 
@@ -136,7 +136,7 @@ class RegisterPurchaseController extends Controller
         } else {
             $receiptPath = null;
             $status = 'pending_payment';
-            $paymentProvider = 'culqi';
+            $paymentProvider = 'mercadopago';
         }
 
         $purchase = Purchase::query()->create([
@@ -164,8 +164,48 @@ class RegisterPurchaseController extends Controller
 
         $purchase->load('user');
 
+        $preferenceData = null;
+        if ($purchase->payment_method === 'mercadopago') {
+            $gateway = app(\App\Services\PaymentGatewayService::class);
+            $course = Course::find($purchase->course_id);
+            $courseTitle = $course ? $course->title : ($purchase->course_code ?: 'Curso EduWanka');
+            $origin = $request->headers->get('origin') ?? config('app.url');
+
+            $backUrls = [
+                'success' => "{$origin}/aula/pagos?payment_status=success",
+                'failure' => "{$origin}/aula/pagos?payment_status=failure",
+                'pending' => "{$origin}/aula/pagos?payment_status=pending",
+            ];
+
+            $pref = $gateway->createPreference(
+                [
+                    'id' => (string) $purchase->course_id,
+                    'title' => $courseTitle,
+                    'price' => $purchase->amount,
+                ],
+                [
+                    'name' => $user->name . ' ' . ($user->last_name ?? ''),
+                    'email' => $user->email,
+                ],
+                (string) $purchase->id,
+                $backUrls
+            );
+
+            if ($pref) {
+                $preferenceData = [
+                    'preference_id' => $pref['id'],
+                    'init_point' => $pref['init_point'],
+                ];
+            }
+        }
+
+        $payload = $this->toPayload($purchase);
+        if ($preferenceData) {
+            $payload = array_merge($payload, $preferenceData);
+        }
+
         return response()->json([
-            'data' => $this->toPayload($purchase),
+            'data' => $payload,
         ], 201);
     }
 
@@ -188,7 +228,7 @@ class RegisterPurchaseController extends Controller
             'currency'         => ['required', 'string', 'size:3'],
             'idempotency_key'  => ['required', 'string', 'max:120'],
 
-            'payment_method'   => ['required', Rule::in(['proof', 'culqi'])],
+            'payment_method'   => ['required', Rule::in(['proof', 'mercadopago'])],
             'payment_modality' => ['nullable', Rule::in(['single', 'installments'])],
             'bank_entity'      => ['nullable', 'string', 'max:50', 'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\s.\-()\/]+$/u'],
             'operation_number' => ['nullable', 'string', 'max:80', 'regex:/^[a-zA-Z0-9\-\s]+$/'],
@@ -236,9 +276,9 @@ class RegisterPurchaseController extends Controller
             ]);
         }
 
-        if ($validated['payment_method'] === 'culqi' && ! $this->canAcceptCulqi()) {
+        if ($validated['payment_method'] === 'mercadopago' && ! $this->canAcceptMercadoPago()) {
             return response()->json([
-                'message' => 'This payment method is not currently available.',
+                'message' => 'El método de pago por Mercado Pago no está disponible actualmente.',
             ], 422);
         }
 
@@ -249,7 +289,7 @@ class RegisterPurchaseController extends Controller
         } else {
             $receiptPath = null;
             $status = Purchase::STATUS_PENDING_PAYMENT;
-            $paymentProvider = 'culqi';
+            $paymentProvider = 'mercadopago';
         }
 
         $purchase = Purchase::query()->create([
@@ -277,8 +317,47 @@ class RegisterPurchaseController extends Controller
 
         $purchase->load(['user', 'course']);
 
+        $preferenceData = null;
+        if ($purchase->payment_method === 'mercadopago') {
+            $gateway = app(\App\Services\PaymentGatewayService::class);
+            $courseTitle = $course ? $course->title : ($purchase->course_code ?: 'Curso EduWanka');
+            $origin = $request->headers->get('origin') ?? config('app.url');
+
+            $backUrls = [
+                'success' => "{$origin}/aula/pagos?payment_status=success",
+                'failure' => "{$origin}/aula/pagos?payment_status=failure",
+                'pending' => "{$origin}/aula/pagos?payment_status=pending",
+            ];
+
+            $pref = $gateway->createPreference(
+                [
+                    'id' => (string) $purchase->course_id,
+                    'title' => $courseTitle,
+                    'price' => $purchase->amount,
+                ],
+                [
+                    'name' => $user->name . ' ' . ($user->last_name ?? ''),
+                    'email' => $user->email,
+                ],
+                (string) $purchase->id,
+                $backUrls
+            );
+
+            if ($pref) {
+                $preferenceData = [
+                    'preference_id' => $pref['id'],
+                    'init_point' => $pref['init_point'],
+                ];
+            }
+        }
+
+        $payload = $this->toPayload($purchase);
+        if ($preferenceData) {
+            $payload = array_merge($payload, $preferenceData);
+        }
+
         return response()->json([
-            'data' => $this->toPayload($purchase),
+            'data' => $payload,
         ], 201);
     }
 
@@ -304,14 +383,9 @@ class RegisterPurchaseController extends Controller
         ];
     }
 
-    private function canAcceptCulqi(): bool
+    private function canAcceptMercadoPago(): bool
     {
-        $enabled = (bool) config('services.culqi.enabled');
-        $publicKey = (string) config('services.culqi.public_key', '');
-        $secretKey = (string) config('services.culqi.secret_key', '');
-
-        return $enabled
-            && str_starts_with($publicKey, 'pk_')
-            && str_starts_with($secretKey, 'sk_');
+        $accessToken = config('services.mercadopago.access_token', '');
+        return !empty($accessToken);
     }
 }

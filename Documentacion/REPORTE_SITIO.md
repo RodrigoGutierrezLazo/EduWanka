@@ -1,11 +1,11 @@
-# Auditoría y Resumen de la Plataforma INAPROF
+# Auditoría y Resumen de la Plataforma EduWanka
 
-Este documento proporciona una visión general técnica y estética de la plataforma web de INAPROF (Excelencia Académica), identificando su stack tecnológico y áreas de mejora en diseño y diagramación.
+Este documento proporciona una visión general técnica y estética de la plataforma web de EduWanka (Excelencia Académica), identificando su stack tecnológico y áreas de mejora en diseño y diagramación.
 
 ---
 
 ## 1. Resumen General
-**INAPROF** es una plataforma web para una institución de alta especialización académica. El sitio está diseñado como una landing page robusta que incluye secciones de:
+**EduWanka** es una plataforma web para una institución de alta especialización académica. El sitio está diseñado como una landing page robusta que incluye secciones de:
 - **Programas Académicos**: Gestión, Tecnología y Leyes.
 - **Especialidades**: Formación de Árbitros, Peritos, Conciliadores, etc.
 - **Cuerpo Docente**: Presentación de instructores destacados.
@@ -28,6 +28,9 @@ La aplicación está construida con tecnologías modernas de alto rendimiento:
 | **Motion (Framer)** | Biblioteca para animaciones y transiciones fluidas. |
 | **Lucide React** | Set de iconos vectoriales consistentes. |
 | **React Router 7** | Manejo de navegación y rutas de la aplicación. |
+| **Axios** | Cliente HTTP optimizado para peticiones a la API del backend. |
+| **React Query (TanStack)** | Gestión de estados de servidor, sincronización y caché. |
+| **Mercado Pago** | Integración del checkout para cobros y pasarela de pago segura. |
 
 ---
 
@@ -51,5 +54,11 @@ La aplicación está construida con tecnologías modernas de alto rendimiento:
 - **Refinar Menú Móvil**: Centrar verticalmente los ítems del menú móvil o añadir elementos visuales (como una imagen decorativa o redes sociales más prominentes) para llenar el espacio vacío.
 - **Añadir Micro-interacciones**: Las tarjetas de cursos en `Courses.tsx` podrían beneficiarse de una elevación de sombra (`shadow-hover`) más pronunciada para indicar interactividad.
 
+### D. Mejoras y Funcionalidades Corregidas e Implementadas
+- **Carga de Datos Real y Dinámica:** Se reemplazaron las tarjetas estáticas y los avisos de "módulo en construcción" en los paneles estudiantiles. Ahora se realiza una consulta real a la API para listar dinámicamente videoconferencias (con filtros de estado y plataforma) y archivos descargables agrupados en acordeones.
+- **Implementación de Empty States Premium:** Se crearon interfaces de estado vacío interactivas y estéticas utilizando Lucide Icons (`FolderOpen` y `VideoOff`) y animaciones sutiles cuando el alumno no posee cursos activos o no hay videoconferencias programadas.
+- **Checkout Integrado y Confiable:** Migración exitosa de la pasarela a Mercado Pago, garantizando transacciones seguras con retorno automatizado e inmediato al Aula Virtual.
+- **Autogestión de Acceso:** Creación e integración visual de interfaces de registro y restauración de clave, lo que reduce la carga de soporte administrativo y optimiza la tasa de conversión en la landing page.
+
 ---
-*Documento generado para el análisis de mejora continua de la plataforma INAPROF.*
+*Documento generado para el análisis de mejora continua de la plataforma EduWanka.*

@@ -6,18 +6,22 @@ use App\Http\Controllers\Controller;
 use App\Models\QuestionnaireAttempt;
 use App\Models\SubstituteExam;
 use App\Models\SubstituteExamAttempt;
+use App\Models\Questionnaire;
+use App\Http\Controllers\Api\V1\Modules\AuthorizesModuleAccess;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class SubstituteExamController extends Controller
 {
+    use AuthorizesModuleAccess;
     public function index(): JsonResponse
     {
         return response()->json(['data' => SubstituteExam::with('questions.options')->get()]);
     }
 
-    public function show(SubstituteExam $substituteExam): JsonResponse
+    public function show(Request $request, SubstituteExam $substituteExam): JsonResponse
     {
+        $this->authorizedCourse($request, $substituteExam->originalQuestionnaire->course);
         $substituteExam->load('questions.options', 'originalExam');
         return response()->json(['data' => $substituteExam]);
     }
@@ -34,6 +38,9 @@ class SubstituteExamController extends Controller
             'questions'        => ['sometimes', 'array'],
         ]);
 
+        $questionnaire = Questionnaire::findOrFail($validated['original_questionnaire_id']);
+        $this->authorizedCourse($request, $questionnaire->course);
+
         $subExam = SubstituteExam::create($validated);
 
         if (!empty($validated['questions'])) {
@@ -46,6 +53,7 @@ class SubstituteExamController extends Controller
 
     public function update(Request $request, SubstituteExam $substituteExam): JsonResponse
     {
+        $this->authorizedCourse($request, $substituteExam->originalQuestionnaire->course);
         $validated = $request->validate([
             'title'            => ['sometimes', 'string', 'max:255'],
             'opens_at'         => ['nullable', 'date'],
@@ -66,8 +74,9 @@ class SubstituteExamController extends Controller
         return response()->json(['data' => $substituteExam]);
     }
 
-    public function destroy(SubstituteExam $substituteExam): JsonResponse
+    public function destroy(Request $request, SubstituteExam $substituteExam): JsonResponse
     {
+        $this->authorizedCourse($request, $substituteExam->originalQuestionnaire->course);
         $substituteExam->delete();
         return response()->json(['message' => 'Examen sustitutorio eliminado.']);
     }
@@ -77,6 +86,7 @@ class SubstituteExamController extends Controller
      */
     public function eligibility(Request $request, SubstituteExam $substituteExam): JsonResponse
     {
+        $this->authorizedCourse($request, $substituteExam->originalQuestionnaire->course);
         $user = $request->user();
         $eligible = $this->isEligible($user->id, $substituteExam);
 
@@ -91,6 +101,7 @@ class SubstituteExamController extends Controller
      */
     public function submitAttempt(Request $request, SubstituteExam $substituteExam): JsonResponse
     {
+        $this->authorizedCourse($request, $substituteExam->originalQuestionnaire->course);
         $user = $request->user();
 
         if (!$this->isEligible($user->id, $substituteExam)) {

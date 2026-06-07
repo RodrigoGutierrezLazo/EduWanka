@@ -17,14 +17,14 @@ class TenantMiddleware
 
         // 1. Si no hay header, intentar deducir del host (subdominio)
         if (!$tenantSlug) {
-            $host = $request->getHost(); // ej: inaprof.eduwanka.local, verde.localhost o localhost
+            $host = $request->getHost(); // ej: demo.eduwanka.local, verde.localhost o localhost
             $parts = explode('.', $host);
             
             // Si es un dominio local del tipo algo.localhost, tiene 2 partes
             if (count($parts) === 2 && $parts[1] === 'localhost') {
                 $tenantSlug = $parts[0];
             } elseif (count($parts) >= 3) {
-                // Para inaprof.eduwanka.local o inaprof.eduwanka.com
+                // Para demo.eduwanka.local o demo.eduwanka.com
                 if ($parts[0] !== 'www') {
                     $tenantSlug = $parts[0];
                 }
@@ -33,9 +33,13 @@ class TenantMiddleware
 
         // 2. Si aún no hay slug, usar el primero como default para compatibilidad / fallback
         if (!$tenantSlug) {
-            $defaultTenant = Tenant::where('status', 'active')->first();
-            if ($defaultTenant) {
-                $tenantSlug = $defaultTenant->slug;
+            try {
+                $defaultTenant = Tenant::where('status', 'active')->first();
+                if ($defaultTenant) {
+                    $tenantSlug = $defaultTenant->slug;
+                }
+            } catch (\Exception $e) {
+                // Silenciar error si la tabla tenants no existe (ej. en tests sin DB)
             }
         }
 

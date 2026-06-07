@@ -82,8 +82,8 @@ class TenantIsolationTest extends TestCase
     public function test_tenant_middleware_resolves_and_validates_tenant(): void
     {
         $tenant = Tenant::create([
-            'name' => 'Colegio Inaprof',
-            'slug' => 'inaprof',
+            'name' => 'Colegio EduWanka',
+            'slug' => 'eduwanka',
             'status' => 'active',
         ]);
 
@@ -95,7 +95,7 @@ class TenantIsolationTest extends TestCase
 
         // Petición con el header correcto
         $response = $this->actingAs($user)
-            ->withHeader('X-Tenant-Slug', 'inaprof')
+            ->withHeader('X-Tenant-Slug', 'eduwanka')
             ->getJson('/api/v1/aula/student-data');
 
         $response->assertStatus(200);
@@ -105,8 +105,8 @@ class TenantIsolationTest extends TestCase
     public function test_tenant_middleware_rejects_suspended_tenant(): void
     {
         $tenant = Tenant::create([
-            'name' => 'Colegio Inaprof',
-            'slug' => 'inaprof',
+            'name' => 'Colegio EduWanka',
+            'slug' => 'eduwanka',
             'status' => 'suspended', // SUSPENDIDO!
         ]);
 
@@ -116,7 +116,7 @@ class TenantIsolationTest extends TestCase
         ]);
 
         $response = $this->actingAs($user)
-            ->withHeader('X-Tenant-Slug', 'inaprof')
+            ->withHeader('X-Tenant-Slug', 'eduwanka')
             ->getJson('/api/v1/aula/student-data');
 
         $response->assertStatus(403);

@@ -1,0 +1,102 @@
+# ------------------------------------------------------------------------------
+# CONFIGURACIÓN DE NGINX PARA VPS LINUX (EduWanka SaaS)
+# ------------------------------------------------------------------------------
+# Este archivo muestra cómo configurar Nginx para servir el Frontend (React SPA)
+# y redirigir las solicitudes de API a la aplicación Backend (Laravel).
+#
+# Copia este archivo a: /etc/nginx/sites-available/eduwanka.pe
+# Y habilítalo haciendo un enlace simbólico a sites-enabled:
+# sudo ln -s /etc/nginx/sites-available/eduwanka.pe /etc/nginx/sites-enabled/
+# Luego verifica la sintaxis con `sudo nginx -t` y reinicia Nginx con `sudo systemctl restart nginx`
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name eduwanka.pe *.eduwanka.pe;
+
+    # Redirigir todo el tráfico HTTP a HTTPS de forma segura
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 445 ssl http2; # Nota: Cambiar a 443 al habilitar producción
+    listen [::]:443 ssl http2;
+    server_name eduwanka.pe *.eduwanka.pe;
+
+    # Directorio de los archivos compilados del Frontend (React Vite SPA)
+    root /var/www/eduwanka/frontend/dist;
+    index index.html;
+
+    # Seguridad SSL (Ejemplo con certificados de Let's Encrypt / Certbot)
+    # Genera tus certificados con: sudo certbot --nginx -d eduwanka.pe -d *.eduwanka.pe
+    ssl_certificate /etc/letsencrypt/live/eduwanka.pe/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/eduwanka.pe/privkey.pem;
+    
+    # Parámetros de Seguridad SSL recomendados
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers on;
+    ssl_ciphers 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384';
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
+
+    # Cabeceras de seguridad HTTP
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "no-referrer-when-downgrade" always;
+    add_header Content-Security-Policy "upgrade-insecure-requests; block-all-mixed-content;" always;
+
+    charset utf-8;
+
+    # 1. Servir archivos estáticos del Frontend
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # 2. Servir los archivos subidos del almacenamiento (Storage)
+    # Redirige solicitudes de /storage directamente a la carpeta storage de Laravel
+    location /storage {
+        alias /var/www/eduwanka/backend/storage/app/public;
+        access_log off;
+        log_not_found off;
+        expires max;
+        try_files $uri =404;
+
+        # Habilitar CORS para poder descargar recursos desde subdominios
+        add_header Access-Control-Allow-Origin "*";
+    }
+
+    # 3. Proxificar las peticiones de la API y Sanctum al Backend (Laravel)
+    location ~ ^/(api|sanctum|_debugbar) {
+        # Directorio raíz del backend Laravel
+        root /var/www/eduwanka/backend/public;
+        
+        # Intentar servir el archivo directamente o pasar a index.php de Laravel
+        try_files $uri $uri/ /index.php?$query_string;
+
+        # Pasar peticiones PHP a PHP-FPM socket
+        # Asegúrate de verificar la versión instalada en tu VPS (ej. php8.2-fpm o php8.3-fpm)
+        location ~ \.php$ {
+            include snippets/fastcgi-php.conf;
+            fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;
+            fastcgi_param SCRIPT_FILENAME $request_filename;
+            include fastcgi_params;
+            
+            # Optimización de tiempos de espera para llamadas largas en PHP
+            fastcgi_read_timeout 300;
+        }
+    }
+
+    # Bloquear acceso a archivos sensibles (.env, .git, etc.)
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+
+    # Configuración de Logs
+    access_log /var/log/nginx/eduwanka.access.log;
+    error_log /var/log/nginx/eduwanka.error.log warn;
+
+    # Optimización de subida de archivos (límite de tamaño para materiales y videos)
+    client_max_body_size 100M;
+}

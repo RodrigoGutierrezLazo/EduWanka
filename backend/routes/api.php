@@ -8,6 +8,9 @@ use App\Http\Controllers\Api\V1\PublicTeachersController;
 use App\Http\Controllers\Api\V1\Auth\LoginController;
 use App\Http\Controllers\Api\V1\Auth\LogoutController;
 use App\Http\Controllers\Api\V1\Auth\MeController;
+use App\Http\Controllers\Api\V1\Auth\RegisterController;
+use App\Http\Controllers\Api\V1\Auth\ForgotPasswordController;
+use App\Http\Controllers\Api\V1\Auth\ResetPasswordController;
 use App\Http\Controllers\Api\V1\Aula\AulaAccessController;
 use App\Http\Controllers\Api\V1\Learning\LatestCertificateController;
 use App\Http\Controllers\Api\V1\Learning\VerifyCertificateController;
@@ -87,10 +90,18 @@ Route::prefix('v1')->group(function (): void {
         Route::post('/login', LoginController::class)
             ->middleware(app()->isLocal() ? 'throttle:60,1' : 'throttle:5,1')
             ->name('api.v1.auth.login');
+
+        Route::post('/register', RegisterController::class)
+            ->middleware(app()->isLocal() ? 'throttle:60,1' : 'throttle:5,1')
+            ->name('api.v1.auth.register');
             
-        Route::post('/forgot-password', [\App\Http\Controllers\Api\V1\Auth\PasswordResetRequestController::class, 'store'])
+        Route::post('/forgot-password', ForgotPasswordController::class)
             ->middleware('throttle:5,1')
             ->name('api.v1.auth.forgot-password');
+
+        Route::post('/reset-password', ResetPasswordController::class)
+            ->middleware('throttle:5,1')
+            ->name('api.v1.auth.reset-password');
 
         Route::middleware('auth:sanctum')->group(function (): void {
             Route::get('/me', MeController::class)->name('api.v1.auth.me');
@@ -102,6 +113,9 @@ Route::prefix('v1')->group(function (): void {
         Route::post('/register-purchase', RegisterPurchaseController::class)
             ->name('api.v1.checkout.register_purchase');
     });
+
+    Route::post('/payments/mercadopago/webhook', \App\Http\Controllers\Api\V1\Payments\MercadoPagoWebhookController::class)
+        ->name('api.v1.payments.mercadopago.webhook');
 
     // Rutas de datos (GET): límite alto para soportar refetch automático de dashboards
     Route::middleware(['auth:sanctum', 'throttle:200,1'])->group(function () {

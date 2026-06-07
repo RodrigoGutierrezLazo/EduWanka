@@ -136,12 +136,11 @@ export default function Login() {
                 <label className="block font-display text-xs font-bold text-slate-400 uppercase tracking-widest">
                   Contraseña
                 </label>
-                <button 
-                  type="button" 
-                  onClick={() => setShowForgotModal(true)}
+                <Link 
+                  to="/forgot-password"
                   className="text-[10px] font-bold text-secondary uppercase tracking-widest hover:text-primary transition-colors">
                   ¿Olvidaste tu clave?
-                </button>
+                </Link>
               </div>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
@@ -180,7 +179,9 @@ export default function Login() {
           <div className="mt-12 pt-8 border-t border-slate-50 text-center">
             <p className="font-serif text-slate-500 text-sm">
               ¿No tienes una cuenta? <br />
-              <Link to="/cursos" className="text-secondary font-bold hover:text-primary transition-colors">Explora nuestros programas</Link>
+              <Link to="/registro" className="text-secondary font-bold hover:text-primary transition-colors">Regístrate aquí</Link>
+              <span className="text-slate-300 mx-2">•</span>
+              <Link to="/cursos" className="text-slate-400 hover:text-primary transition-colors text-xs">Explorar cursos</Link>
             </p>
           </div>
         </motion.div>

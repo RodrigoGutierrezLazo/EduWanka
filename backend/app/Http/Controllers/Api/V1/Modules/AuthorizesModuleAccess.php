@@ -28,7 +28,18 @@ trait AuthorizesModuleAccess
             return $course;
         }
 
-        abort(403, 'No tienes permiso para gestionar el contenido de este curso.');
+        if ($user->role === 'student' && $request->isMethod('GET')) {
+            $hasAccess = $user->purchases()
+                ->where('course_code', $course->code)
+                ->whereIn('status', ['validated', 'paid'])
+                ->exists();
+
+            if ($hasAccess) {
+                return $course;
+            }
+        }
+
+        abort(403, 'No tienes permiso para acceder al contenido de este curso.');
     }
 
     /**

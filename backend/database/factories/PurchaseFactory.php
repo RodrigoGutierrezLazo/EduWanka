@@ -20,6 +20,11 @@ class PurchaseFactory extends Factory
             'payment_method' => 'bank_transfer',
             'status' => Purchase::STATUS_PENDING_VALIDATION,
             'idempotency_key' => 'purchase-' . Str::uuid(),
+            'tenant_id' => \App\Models\Tenant::first()?->id ?? \App\Models\Tenant::create([
+                'name' => 'Default Test Tenant',
+                'slug' => 'default-test',
+                'status' => 'active',
+            ])->id,
         ];
     }
 }

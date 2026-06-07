@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="frontend/Logo.ico" alt="EduWanka" width="80" />
+  <img src="logo_eduwanka.png" alt="EduWanka" width="120" />
 </p>
 
 # EduWanka

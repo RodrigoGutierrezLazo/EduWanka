@@ -6,19 +6,23 @@ use App\Http\Controllers\Controller;
 use App\Models\Questionnaire;
 use App\Models\QuestionnaireAttempt;
 use App\Models\QuestionnaireQuestion;
+use App\Models\Course;
+use App\Http\Controllers\Api\V1\Modules\AuthorizesModuleAccess;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class QuestionnaireController extends Controller
 {
+    use AuthorizesModuleAccess;
     public function index(Request $request): JsonResponse
     {
         $questionnaires = Questionnaire::with('questions.options')->get();
         return response()->json(['data' => $questionnaires]);
     }
 
-    public function show(Questionnaire $questionnaire): JsonResponse
+    public function show(Request $request, Questionnaire $questionnaire): JsonResponse
     {
+        $this->authorizedCourse($request, $questionnaire->course);
         $questionnaire->load('questions.options');
         return response()->json(['data' => $questionnaire]);
     }
@@ -36,6 +40,9 @@ class QuestionnaireController extends Controller
             'questions'          => ['sometimes', 'array'],
         ]);
 
+        $course = Course::findOrFail($validated['course_id']);
+        $this->authorizedCourse($request, $course);
+
         $questionnaire = Questionnaire::create($validated);
 
         if (!empty($validated['questions'])) {
@@ -48,6 +55,7 @@ class QuestionnaireController extends Controller
 
     public function update(Request $request, Questionnaire $questionnaire): JsonResponse
     {
+        $this->authorizedCourse($request, $questionnaire->course);
         $validated = $request->validate([
             'title'              => ['sometimes', 'string', 'max:255'],
             'description'        => ['nullable', 'string'],
@@ -69,14 +77,16 @@ class QuestionnaireController extends Controller
         return response()->json(['data' => $questionnaire]);
     }
 
-    public function destroy(Questionnaire $questionnaire): JsonResponse
+    public function destroy(Request $request, Questionnaire $questionnaire): JsonResponse
     {
+        $this->authorizedCourse($request, $questionnaire->course);
         $questionnaire->delete();
         return response()->json(['message' => 'Cuestionario eliminado.']);
     }
 
     public function submitAttempt(Request $request, Questionnaire $questionnaire): JsonResponse
     {
+        $this->authorizedCourse($request, $questionnaire->course);
         $user = $request->user();
 
         // Check max_attempts
@@ -141,6 +151,7 @@ class QuestionnaireController extends Controller
 
     public function myAttempts(Request $request, Questionnaire $questionnaire): JsonResponse
     {
+        $this->authorizedCourse($request, $questionnaire->course);
         $attempts = QuestionnaireAttempt::where('user_id', $request->user()->id)
             ->where('questionnaire_id', $questionnaire->id)
             ->latest()

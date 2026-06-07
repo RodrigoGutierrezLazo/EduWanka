@@ -395,7 +395,7 @@ export default function TenantManagement() {
                 <input
                   type="text"
                   required
-                  placeholder="Ej: Instituto de Formación Inaprof"
+                  placeholder="Ej: Instituto de Formación EduWanka"
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500 font-bold text-sm text-slate-700"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -408,7 +408,7 @@ export default function TenantManagement() {
                   type="text"
                   required
                   disabled={!!editingTenant}
-                  placeholder="Ej: inaprof (solo minúsculas y números)"
+                  placeholder="Ej: eduwanka (solo minúsculas y números)"
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500 font-bold text-sm text-slate-700 disabled:bg-slate-50 disabled:text-slate-400"
                   value={formData.slug}
                   onChange={(e) => setFormData({ ...formData, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') })}
@@ -419,7 +419,7 @@ export default function TenantManagement() {
                 <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Dominio Personalizado (Opcional)</label>
                 <input
                   type="text"
-                  placeholder="Ej: www.inaprof.edu.pe"
+                  placeholder="Ej: www.eduwanka.edu.pe"
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500 font-bold text-sm text-slate-700"
                   value={formData.domain}
                   onChange={(e) => setFormData({ ...formData, domain: e.target.value })}

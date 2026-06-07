@@ -48,24 +48,28 @@ return new class extends Migration
         }
 
         // 3. Alterar columnas a NOT NULL
+        $isSqlite = DB::getDriverName() === 'sqlite';
+
         foreach ($this->tables as $tableName) {
             if (Schema::hasTable($tableName)) {
-                Schema::table($tableName, function (Blueprint $table) use ($tableName) {
-                    // Primero eliminamos la clave foránea anterior para poder modificar la columna
-                    try {
-                        // En Laravel, si pasamos un array, construye el nombre dinámicamente.
-                        // Si pasamos un string, usa el nombre exacto de la clave foránea.
-                        $foreignKeyName = $tableName . '_tenant_id_foreign';
-                        $table->dropForeign($foreignKeyName);
-                    } catch (\Exception $e) {
-                        // Omitir si no existe o falla
+                Schema::table($tableName, function (Blueprint $table) use ($tableName, $isSqlite) {
+                    if (!$isSqlite) {
+                        // Primero eliminamos la clave foránea anterior para poder modificar la columna
+                        try {
+                            $foreignKeyName = $tableName . '_tenant_id_foreign';
+                            $table->dropForeign($foreignKeyName);
+                        } catch (\Exception $e) {
+                            // Omitir si no existe o falla
+                        }
                     }
 
                     // Modificar la columna a NOT NULL
                     $table->foreignId('tenant_id')->nullable(false)->change();
 
-                    // Re-agregar el constraint
-                    $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');
+                    if (!$isSqlite) {
+                        // Re-agregar el constraint
+                        $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');
+                    }
                 });
             }
         }
@@ -73,18 +77,25 @@ return new class extends Migration
 
     public function down(): void
     {
+        $isSqlite = DB::getDriverName() === 'sqlite';
+
         foreach ($this->tables as $tableName) {
             if (Schema::hasTable($tableName)) {
-                Schema::table($tableName, function (Blueprint $table) use ($tableName) {
-                    try {
-                        $foreignKeyName = $tableName . '_tenant_id_foreign';
-                        $table->dropForeign($foreignKeyName);
-                    } catch (\Exception $e) {
-                        // Omitir si falla
+                Schema::table($tableName, function (Blueprint $table) use ($tableName, $isSqlite) {
+                    if (!$isSqlite) {
+                        try {
+                            $foreignKeyName = $tableName . '_tenant_id_foreign';
+                            $table->dropForeign($foreignKeyName);
+                        } catch (\Exception $e) {
+                            // Omitir si falla
+                        }
                     }
 
                     $table->foreignId('tenant_id')->nullable(true)->change();
-                    $table->foreign('tenant_id')->references('id')->on('tenants')->nullOnDelete();
+
+                    if (!$isSqlite) {
+                        $table->foreign('tenant_id')->references('id')->on('tenants')->nullOnDelete();
+                    }
                 });
             }
         }

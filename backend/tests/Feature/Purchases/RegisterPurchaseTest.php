@@ -67,70 +67,56 @@ class RegisterPurchaseTest extends TestCase
             ->assertJsonValidationErrors(['receipt']);
     }
 
-    public function test_register_purchase_with_culqi_creates_pending_payment_without_receipt(): void
+    public function test_register_purchase_with_mercadopago_creates_preference(): void
     {
-        config()->set('services.culqi.enabled', true);
-        config()->set('services.culqi.public_key', 'pk_test_123');
-        config()->set('services.culqi.secret_key', 'sk_test_123');
+        \Illuminate\Support\Facades\Http::fake([
+            'https://api.mercadopago.com/*' => \Illuminate\Support\Facades\Http::response([
+                'id' => 'mp-pref-123456',
+                'init_point' => 'https://www.mercadopago.com.pe/sandbox/button',
+            ], 200),
+        ]);
+
+        config()->set('services.mercadopago.access_token', 'APP_USR-test-token');
+        config()->set('services.mercadopago.public_key', 'APP_USR-test-key');
 
         $response = $this->postJson('/api/v1/checkout/register-purchase', [
-            'name' => 'Luis Culqi',
-            'email' => 'luis.culqi@example.test',
+            'name' => 'Luis MP',
+            'email' => 'luis.mp@example.test',
             'password' => 'Secret123!',
             'course_code' => 'EDUWANKA-MVP',
             'amount' => 12000,
             'currency' => 'PEN',
-            'payment_method' => 'culqi',
-            'idempotency_key' => 'idem-culqi-001',
+            'payment_method' => 'mercadopago',
+            'idempotency_key' => 'idem-mp-001',
         ]);
 
         $response
             ->assertCreated()
-            ->assertJsonPath('data.payment_method', 'culqi')
+            ->assertJsonPath('data.payment_method', 'mercadopago')
             ->assertJsonPath('data.status', 'pending_payment')
-            ->assertJsonPath('data.receipt_path', null);
+            ->assertJsonPath('data.preference_id', 'mp-pref-123456')
+            ->assertJsonPath('data.init_point', 'https://www.mercadopago.com.pe/sandbox/button');
     }
 
-    public function test_register_purchase_with_culqi_is_blocked_when_feature_flag_is_disabled(): void
+    public function test_register_purchase_with_mercadopago_is_blocked_when_keys_are_not_configured(): void
     {
-        config()->set('services.culqi.enabled', false);
+        config()->set('services.mercadopago.access_token', '');
+        config()->set('services.mercadopago.public_key', '');
 
         $response = $this->postJson('/api/v1/checkout/register-purchase', [
-            'name' => 'Luis Culqi',
-            'email' => 'luis.culqi.disabled@example.test',
+            'name' => 'Luis MP',
+            'email' => 'luis.mp.no-keys@example.test',
             'password' => 'Secret123!',
             'course_code' => 'EDUWANKA-MVP',
             'amount' => 12000,
             'currency' => 'PEN',
-            'payment_method' => 'culqi',
-            'idempotency_key' => 'idem-culqi-disabled-001',
+            'payment_method' => 'mercadopago',
+            'idempotency_key' => 'idem-mp-no-keys-001',
         ]);
 
         $response
             ->assertUnprocessable()
-            ->assertJsonPath('message', 'This payment method is not currently available.');
-    }
-
-    public function test_register_purchase_with_culqi_is_blocked_when_keys_are_not_configured(): void
-    {
-        config()->set('services.culqi.enabled', true);
-        config()->set('services.culqi.public_key', '');
-        config()->set('services.culqi.secret_key', '');
-
-        $response = $this->postJson('/api/v1/checkout/register-purchase', [
-            'name' => 'Luis Culqi',
-            'email' => 'luis.culqi.no-keys@example.test',
-            'password' => 'Secret123!',
-            'course_code' => 'EDUWANKA-MVP',
-            'amount' => 12000,
-            'currency' => 'PEN',
-            'payment_method' => 'culqi',
-            'idempotency_key' => 'idem-culqi-no-keys-001',
-        ]);
-
-        $response
-            ->assertUnprocessable()
-            ->assertJsonPath('message', 'This payment method is not currently available.');
+            ->assertJsonPath('message', 'El método de pago por Mercado Pago no está disponible actualmente.');
     }
 
     public function test_register_purchase_requires_valid_password_when_user_already_exists(): void

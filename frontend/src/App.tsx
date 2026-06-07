@@ -19,6 +19,9 @@ import CourseDetail from "./pages/CourseDetail";
 import Certificates from "./pages/Certificates";
 import Contact from "./pages/Contact";
 import Login from "./pages/Login";
+import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import EventDetail from "./pages/EventDetail";
 import EspecialidadDetail from "./pages/especialidades/EspecialidadDetail";
 import NotFoundPage from "./pages/NotFoundPage";
@@ -259,6 +262,9 @@ export default function App() {
           <Route path="/faq" element={<PublicLayout><Faq /></PublicLayout>} />
           <Route path="/contacto" element={<PublicLayout><Contact /></PublicLayout>} />
           <Route path="/login" element={<PublicLayout><Login /></PublicLayout>} />
+          <Route path="/registro" element={<PublicLayout><Register /></PublicLayout>} />
+          <Route path="/forgot-password" element={<PublicLayout><ForgotPassword /></PublicLayout>} />
+          <Route path="/reset-password" element={<PublicLayout><ResetPassword /></PublicLayout>} />
           <Route path="/eventos/:id" element={<PublicLayout><EventDetail /></PublicLayout>} />
           <Route path="/especialidades/:id" element={<PublicLayout><EspecialidadDetail /></PublicLayout>} />
           <Route path="/politica-privacidad" element={<PublicLayout><L><PrivacyPolicy /></L></PublicLayout>} />

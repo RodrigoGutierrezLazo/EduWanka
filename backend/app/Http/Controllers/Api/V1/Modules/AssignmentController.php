@@ -5,18 +5,22 @@ namespace App\Http\Controllers\Api\V1\Modules;
 use App\Http\Controllers\Controller;
 use App\Models\Assignment;
 use App\Models\AssignmentSubmission;
+use App\Models\Course;
+use App\Http\Controllers\Api\V1\Modules\AuthorizesModuleAccess;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class AssignmentController extends Controller
 {
+    use AuthorizesModuleAccess;
     public function index(): JsonResponse
     {
         return response()->json(['data' => Assignment::all()]);
     }
 
-    public function show(Assignment $assignment): JsonResponse
+    public function show(Request $request, Assignment $assignment): JsonResponse
     {
+        $this->authorizedCourse($request, $assignment->course);
         $assignment->load('submissions.user');
         return response()->json(['data' => $assignment]);
     }
@@ -31,12 +35,16 @@ class AssignmentController extends Controller
             'max_score'    => ['sometimes', 'integer', 'min:1', 'max:100'],
         ]);
 
+        $course = Course::findOrFail($validated['course_id']);
+        $this->authorizedCourse($request, $course);
+
         $assignment = Assignment::create($validated);
         return response()->json(['data' => $assignment], 201);
     }
 
     public function update(Request $request, Assignment $assignment): JsonResponse
     {
+        $this->authorizedCourse($request, $assignment->course);
         $validated = $request->validate([
             'title'        => ['sometimes', 'string', 'max:255'],
             'instructions' => ['sometimes', 'string'],
@@ -48,8 +56,9 @@ class AssignmentController extends Controller
         return response()->json(['data' => $assignment]);
     }
 
-    public function destroy(Assignment $assignment): JsonResponse
+    public function destroy(Request $request, Assignment $assignment): JsonResponse
     {
+        $this->authorizedCourse($request, $assignment->course);
         $assignment->delete();
         return response()->json(['message' => 'Tarea eliminada.']);
     }
@@ -59,6 +68,7 @@ class AssignmentController extends Controller
      */
     public function submit(Request $request, Assignment $assignment): JsonResponse
     {
+        $this->authorizedCourse($request, $assignment->course);
         $user = $request->user();
 
         $request->validate([
@@ -91,6 +101,7 @@ class AssignmentController extends Controller
      */
     public function grade(Request $request, Assignment $assignment, AssignmentSubmission $submission): JsonResponse
     {
+        $this->authorizedCourse($request, $assignment->course);
         // Only prof/admin (ensured via route middleware)
         $request->validate([
             'score'    => ['required', 'integer', 'min:0', 'max:' . $assignment->max_score],
@@ -111,6 +122,7 @@ class AssignmentController extends Controller
      */
     public function mySubmission(Request $request, Assignment $assignment): JsonResponse
     {
+        $this->authorizedCourse($request, $assignment->course);
         $submission = AssignmentSubmission::where('assignment_id', $assignment->id)
             ->where('user_id', $request->user()->id)
             ->first();

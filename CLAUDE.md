@@ -1,4 +1,4 @@
-# INAPROF — Guia para Claude Code
+# EduWanka — Guia para Claude Code
 
 ## Stack
 
@@ -37,7 +37,7 @@ cd backend && php artisan storage:clean-orphaned --dry-run
 ## Estructura del proyecto
 
 ```
-INAPROF/
+EduWanka/
 ├── backend/                # API Laravel
 │   ├── app/Models/         # Eloquent models
 │   ├── app/Http/Controllers/Api/V1/  # Controllers por rol
