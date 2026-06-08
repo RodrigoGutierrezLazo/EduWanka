@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { apiClient } from "../lib/apiClient";
 import { hasActiveTenant } from "../lib/tenant";
+import { logger } from "../lib/logger";
 
 /* ═══════════════════════════════════════════════════════════════════
    COURSES SHOWCASE — SaaS Feature Page
@@ -201,7 +202,7 @@ const TenantCoursesList = () => {
         const allCourses = data.data ?? data ?? [];
         setCourses(allCourses);
       })
-      .catch(err => console.error("Error loading courses:", err))
+      .catch(err => logger.error("Error loading courses:", err))
       .finally(() => setLoading(false));
   }, []);
 

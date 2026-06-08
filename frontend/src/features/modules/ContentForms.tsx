@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { apiClient } from '@/lib/apiClient';
+import { logger } from '@/lib/logger';
 import type { ContentType, ContentItem } from '@/lib/types';
 
 // ─── Shared Form Field ───────────────────────────────────────────────────────
@@ -201,7 +202,7 @@ export const QuestionnaireInlineForm: React.FC<ContentFormProps & { isSubstitute
         const res = await apiClient.post(endpoint, payload);
         onSubmit({ title, referenced_id: res.data.data.id });
       } catch (err) {
-        console.error(err);
+        logger.error(err);
       } finally {
         setIsCreating(false);
       }
@@ -221,7 +222,7 @@ export const QuestionnaireInlineForm: React.FC<ContentFormProps & { isSubstitute
         await apiClient.put(endpoint, payload);
         onSubmit({ title, referenced_id: initial.referenced_id });
       } catch (err) {
-        console.error(err);
+        logger.error(err);
       } finally {
         setIsCreating(false);
       }

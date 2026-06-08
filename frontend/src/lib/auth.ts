@@ -6,21 +6,30 @@ export interface User {
   [key: string]: any;
 }
 
-/** Indica qué almacenamiento definió el último login válido (tab). Evita usar un token viejo en local si la sesión actual está en session. */
+/**
+ * Indica qué almacenamiento definió el último login válido (tab). Evita usar
+ * un perfil cacheado viejo en local si la sesión actual quedó en session.
+ *
+ * Nota de seguridad: la credencial real ya no vive aquí. La autenticación la
+ * resguarda el backend mediante una cookie de sesión httpOnly (Sanctum SPA),
+ * inaccesible para JavaScript y por tanto inmune a robo vía XSS. Lo que se
+ * cachea en este módulo es solo una copia no sensible del perfil del usuario
+ * (id/nombre/email/rol) para que la UI pueda renderizar de inmediato y decidir
+ * a qué ruta redirigir; el servidor sigue siendo la única fuente de verdad
+ * (cualquier 401 limpia este caché y redirige a /login).
+ */
 const ACTIVE_AUTH_KEY = 'eduwanka_active_auth';
-const ACCESS_TOKEN_KEY = 'eduwanka_access_token';
 const USER_KEY = 'eduwanka_user';
 
 /**
- * Borra credenciales en ambos almacenamientos. Debe llamarse al iniciar sesión
- * para no mezclar un usuario "Recordarme" (local) con un login reciente (sesión).
+ * Borra el perfil cacheado en ambos almacenamientos. Debe llamarse al iniciar
+ * sesión para no mezclar un usuario "Recordarme" (local) con un login reciente
+ * (sesión), y al recibir un 401 inesperado del servidor.
  */
 export function clearAllAuthStorages() {
   try {
-    localStorage.removeItem(ACCESS_TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     localStorage.removeItem(ACTIVE_AUTH_KEY);
-    sessionStorage.removeItem(ACCESS_TOKEN_KEY);
     sessionStorage.removeItem(USER_KEY);
     sessionStorage.removeItem(ACTIVE_AUTH_KEY);
   } catch {
@@ -29,7 +38,7 @@ export function clearAllAuthStorages() {
 }
 
 /**
- * Debe llamarse justo después de guardar token/usuario en login.
+ * Debe llamarse justo después de guardar el perfil del usuario en login.
  * @param source
  */
 export function setActiveAuthSource(source: 'local' | 'session') {
@@ -44,14 +53,14 @@ export function setActiveAuthSource(source: 'local' | 'session') {
 }
 
 /**
- * Resuelve de qué almacenamiento leer token y usuario.
+ * Resuelve de qué almacenamiento leer el perfil cacheado del usuario.
  * @returns 'local' | 'session' | null
  */
 function getPreferredAuthStorage(): 'local' | 'session' | null {
   // Buscar en sessionStorage primero (mismo tab), luego localStorage (nuevo tab)
   const active = sessionStorage.getItem(ACTIVE_AUTH_KEY) ?? localStorage.getItem(ACTIVE_AUTH_KEY);
-  const fromLocal = localStorage.getItem(ACCESS_TOKEN_KEY);
-  const fromSession = sessionStorage.getItem(ACCESS_TOKEN_KEY);
+  const fromLocal = localStorage.getItem(USER_KEY);
+  const fromSession = sessionStorage.getItem(USER_KEY);
 
   if (active === 'local') {
     if (fromLocal) return 'local';
@@ -74,19 +83,15 @@ function getPreferredAuthStorage(): 'local' | 'session' | null {
   return null;
 }
 
-export function getAccessToken(): string | null {
-  const pref = getPreferredAuthStorage();
-  if (pref === 'local') {
-    return localStorage.getItem(ACCESS_TOKEN_KEY);
-  }
-  if (pref === 'session') {
-    return sessionStorage.getItem(ACCESS_TOKEN_KEY);
-  }
-  return null;
-}
-
+/**
+ * Heurística optimista de UI: refleja si hay un perfil cacheado de un login
+ * previo. NO es el mecanismo de seguridad (la cookie httpOnly de sesión lo es)
+ * — solo evita parpadeos de "no autenticado" mientras el navegador ya cuenta
+ * con una sesión válida. El servidor corrige cualquier estado desincronizado
+ * devolviendo 401, lo que dispara `clearAllAuthStorages` y la redirección.
+ */
 export function isAuthenticated(): boolean {
-  return Boolean(getAccessToken());
+  return Boolean(getCurrentUser());
 }
 
 export function getCurrentUserRole(): 'student' | 'prof' | 'admin' | 'superadmin' | null {

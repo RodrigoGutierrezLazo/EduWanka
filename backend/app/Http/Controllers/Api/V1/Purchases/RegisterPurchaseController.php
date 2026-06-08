@@ -136,7 +136,11 @@ class RegisterPurchaseController extends Controller
 
         // Estado inicial según método
         if ($validated['payment_method'] === 'proof') {
-            $receiptPath = $request->file('receipt')?->store('purchases/receipts', 'public');
+            // Disco privado `local` (no servido por web): los comprobantes de
+            // pago contienen datos personales/bancarios y solo deben entregarse
+            // vía el endpoint autenticado (hallazgo 2.5). `store()` ya genera un
+            // nombre aleatorio, evitando colisiones y nombres del cliente.
+            $receiptPath = $request->file('receipt')?->store('purchases/receipts', 'local');
             $status = 'pending_validation';
             $paymentProvider = null;
         } else {
@@ -288,7 +292,11 @@ class RegisterPurchaseController extends Controller
         }
 
         if ($validated['payment_method'] === 'proof') {
-            $receiptPath = $request->file('receipt')?->store('purchases/receipts', 'public');
+            // Disco privado `local` (no servido por web): los comprobantes de
+            // pago contienen datos personales/bancarios y solo deben entregarse
+            // vía el endpoint autenticado (hallazgo 2.5). `store()` ya genera un
+            // nombre aleatorio, evitando colisiones y nombres del cliente.
+            $receiptPath = $request->file('receipt')?->store('purchases/receipts', 'local');
             $status = Purchase::STATUS_PENDING_VALIDATION;
             $paymentProvider = null;
         } else {

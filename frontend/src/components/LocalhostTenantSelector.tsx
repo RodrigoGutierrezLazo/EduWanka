@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Layers, Check, X, ShieldAlert, Sparkles } from 'lucide-react';
 import { apiClient } from '@/lib/apiClient';
+import { clearAllAuthStorages, isAuthenticated } from '@/lib/auth';
 import { getActiveTenantSlug } from '../lib/tenant';
 
 interface Tenant {
@@ -45,14 +46,11 @@ export default function LocalhostTenantSelector() {
   if (!isLocalhost) return null;
 
   const handleSelect = (slug: string | null) => {
-    // Limpiar tokens/sesiones del aula previa para evitar conflictos de autenticación entre tenants
-    const token = localStorage.getItem('eduwanka_access_token');
-    const sessionToken = sessionStorage.getItem('eduwanka_access_token');
-    if (token || sessionToken) {
-      localStorage.removeItem('eduwanka_access_token');
-      localStorage.removeItem('eduwanka_user');
-      sessionStorage.removeItem('eduwanka_access_token');
-      sessionStorage.removeItem('eduwanka_user');
+    // Limpiar el perfil cacheado del aula previa para evitar mezclar usuarios
+    // entre inquilinos. La cookie de sesión httpOnly queda aislada por host
+    // (ej. azul.localhost vs localhost) y no requiere limpieza manual aquí.
+    if (isAuthenticated()) {
+      clearAllAuthStorages();
     }
 
     const port = window.location.port ? `:${window.location.port}` : '';

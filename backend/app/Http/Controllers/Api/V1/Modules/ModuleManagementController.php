@@ -132,9 +132,11 @@ class ModuleManagementController extends Controller
             'order' => ['nullable', 'integer'],
         ];
 
+        $allowedExtensions = implode(',', config('uploads.content_item_extensions'));
+
         match ($request->type) {
             'video', 'meet', 'url' => $rules['url'] = ['required', 'url', 'max:2048'],
-            'file' => $rules['file'] = ['required', 'file', 'max:51200'],
+            'file' => $rules['file'] = ['required', 'file', 'max:51200', "mimes:{$allowedExtensions}"],
             'text' => $rules['body_html'] = ['required', 'string'],
             'questionnaire'  => $rules['referenced_id'] = ['required', 'integer', 'exists:questionnaires,id'],
             'substitute_exam'=> $rules['referenced_id'] = ['required', 'integer', 'exists:substitute_exams,id'],

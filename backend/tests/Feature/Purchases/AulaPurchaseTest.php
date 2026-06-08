@@ -17,7 +17,8 @@ class AulaPurchaseTest extends TestCase
 
     public function test_authenticated_student_can_add_course_without_reentering_profile_or_password(): void
     {
-        Storage::fake('public');
+        // Los comprobantes ahora se guardan en el disco privado `local` (2.5).
+        Storage::fake('local');
 
         $student = User::factory()->create([
             'role' => 'student',
@@ -62,7 +63,7 @@ class AulaPurchaseTest extends TestCase
         $this->assertSame($student->id, $purchase->user_id);
         $this->assertSame($course->id, $purchase->course_id);
         $this->assertNotNull($purchase->receipt_path);
-        Storage::disk('public')->assertExists($purchase->receipt_path);
+        Storage::disk('local')->assertExists($purchase->receipt_path);
 
         $this->assertSame('EduWanka', $purchase->certification_institution);
     }

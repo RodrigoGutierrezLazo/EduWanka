@@ -28,7 +28,8 @@ class RegisterPurchaseTest extends TestCase
 
     public function test_register_purchase_with_proof_creates_pending_validation_record(): void
     {
-        Storage::fake('public');
+        // Los comprobantes ahora se guardan en el disco privado `local` (2.5).
+        Storage::fake('local');
 
         $response = $this->postJson('/api/v1/checkout/register-purchase', [
             'name' => 'Ana Student',
@@ -58,7 +59,7 @@ class RegisterPurchaseTest extends TestCase
 
         $this->assertNotNull($purchase);
         $this->assertNotNull($purchase->receipt_path);
-        Storage::disk('public')->assertExists($purchase->receipt_path);
+        Storage::disk('local')->assertExists($purchase->receipt_path);
 
         // El monto se calcula siempre desde el precio del curso, nunca desde el cliente
         $this->assertEquals((int) round($this->course->price), $purchase->amount);

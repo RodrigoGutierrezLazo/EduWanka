@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BookOpen, FileSpreadsheet, ShieldAlert, CheckCircle2, Printer, ChevronRight, ChevronLeft, Calendar, User, FileText, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { apiClient } from '../lib/apiClient';
 
 type Step = 'identificacion' | 'bien' | 'reclamacion' | 'exito';
 
@@ -49,6 +50,7 @@ export default function ComplaintsBook() {
   const [generatedCode, setGeneratedCode] = useState('');
   const [generatedDate, setGeneratedDate] = useState('');
   const [formErrors, setFormErrors] = useState<string>('');
+  const [submitting, setSubmitting] = useState(false);
 
   const onChange = (k: keyof ComplaintFormData, v: any) => {
     setForm(f => ({ ...f, [k]: v }));
@@ -92,38 +94,49 @@ export default function ComplaintsBook() {
     else if (step === 'reclamacion') setStep('bien');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateStep('reclamacion')) return;
+    if (submitting) return;
 
-    // Generar código de reclamo con fecha actual
-    const year = new Date().getFullYear();
-    const randomNum = Math.floor(1000 + Math.random() * 9000);
-    const code = `REC-${year}-${randomNum}`;
-    const dateStr = new Date().toLocaleString('es-PE', { timeZone: 'America/Lima' });
-
-    const newComplaint = {
-      ...form,
-      code,
-      date: dateStr,
-      status: 'Pendiente',
-      response: '',
-      responseDate: ''
+    // Mapear el formulario al contrato del API del Libro de Reclamaciones.
+    // El backend determina el ámbito (institución/general) por el origen de la
+    // petición y genera el folio oficial; nunca se confía en un código local.
+    const payload = {
+      type: form.claimType === 'Queja' ? 'queja' : 'reclamo',
+      full_name: form.name.trim(),
+      document_type: 'DNI',
+      document_number: form.dni.trim(),
+      email: form.email.trim(),
+      phone: form.phone.trim(),
+      address: form.address.trim(),
+      is_minor: form.isMinor,
+      guardian_name: form.isMinor ? form.guardianName?.trim() || null : null,
+      guardian_document_number: form.isMinor ? form.guardianDni?.trim() || null : null,
+      claimed_item: form.courseName.trim(),
+      claimed_item_type: form.bienType === 'Producto' ? 'producto' : 'servicio',
+      claimed_amount: form.amountPaid ? Number(form.amountPaid) : null,
+      detail: form.description.trim(),
+      consumer_request: form.request.trim(),
     };
 
-    // Guardar en LocalStorage
+    setSubmitting(true);
     try {
-      const existing = localStorage.getItem('eduwanka_complaints');
-      const list = existing ? JSON.parse(existing) : [];
-      list.unshift(newComplaint);
-      localStorage.setItem('eduwanka_complaints', JSON.stringify(list));
-    } catch (err) {
-      console.error('Error saving complaint to localStorage', err);
+      const { data } = await apiClient.post('/api/v1/complaints', payload);
+      const code = data?.data?.code ?? '';
+      const createdAt = data?.data?.created_at ? new Date(data.data.created_at) : new Date();
+      setGeneratedCode(code);
+      setGeneratedDate(createdAt.toLocaleString('es-PE', { timeZone: 'America/Lima' }));
+      setStep('exito');
+    } catch (err: any) {
+      const apiMsg = err?.response?.data?.message;
+      const firstValidation = err?.response?.data?.errors
+        ? (Object.values(err.response.data.errors)[0] as string[])?.[0]
+        : null;
+      setFormErrors(firstValidation || apiMsg || 'No se pudo registrar el reclamo. Inténtalo nuevamente en unos minutos.');
+    } finally {
+      setSubmitting(false);
     }
-
-    setGeneratedCode(code);
-    setGeneratedDate(dateStr);
-    setStep('exito');
   };
 
   const handlePrint = () => {
@@ -465,10 +478,11 @@ export default function ComplaintsBook() {
                 </button>
                 <button
                   type="submit"
-                  className="flex items-center gap-1.5 bg-primary text-white font-sans font-bold text-xs uppercase tracking-widest px-6 py-3 rounded-lg shadow-lg hover:shadow-xl hover:brightness-110 active:translate-y-0.5 cursor-pointer transition-all"
+                  disabled={submitting}
+                  className="flex items-center gap-1.5 bg-primary text-white font-sans font-bold text-xs uppercase tracking-widest px-6 py-3 rounded-lg shadow-lg hover:shadow-xl hover:brightness-110 active:translate-y-0.5 cursor-pointer transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   <CheckCircle className="w-4 h-4 text-secondary shrink-0" />
-                  Enviar Reclamación
+                  {submitting ? 'Enviando…' : 'Enviar Reclamación'}
                 </button>
               </div>
             </form>

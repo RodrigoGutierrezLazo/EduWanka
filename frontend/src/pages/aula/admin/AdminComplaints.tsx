@@ -2,8 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { FileSpreadsheet, Search, Eye, RefreshCw, CheckCircle2, ShieldAlert, X, AlertCircle, FileText, ChevronRight, MessageSquare, ShieldCheck, Printer } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'motion/react';
+import { apiClient } from '../../../lib/apiClient';
+
+type UiStatus = 'Pendiente' | 'En Proceso' | 'Resuelto';
 
 interface Complaint {
+  id: number;
   code: string;
   date: string;
   name: string;
@@ -20,75 +24,83 @@ interface Complaint {
   claimType: 'Reclamación' | 'Queja';
   description: string;
   request: string;
-  status: 'Pendiente' | 'En Proceso' | 'Resuelto';
+  status: UiStatus;
   response: string;
   responseDate?: string;
 }
 
-const MOCK_COMPLAINTS: Complaint[] = [
-  {
-    code: 'REC-2026-1049',
-    date: '25/5/2026 15:30:22',
-    name: 'Carlos Alberto Mendoza Torres',
-    dni: '71234567',
-    email: 'carlos.mendoza@gmail.com',
-    phone: '951357456',
-    address: 'Av. El Sol 1240, Trujillo',
-    isMinor: false,
-    bienType: 'Servicio',
-    courseName: 'Diplomado en Formación de Árbitros',
-    amountPaid: '750.00',
-    claimType: 'Reclamación',
-    description: 'Aún no se ha habilitado el módulo 4 del sílabo procesal en mi Aula Virtual, a pesar de que realicé el pago correspondiente el 20 de mayo y envié el voucher para la convalidación. Solicito la habilitación inmediata ya que las clases sincrónicas están por iniciar.',
-    request: 'Habilitación inmediata del acceso académico y la correspondiente actualización de la matrícula del módulo 4.',
-    status: 'Pendiente',
-    response: '',
-  },
-  {
-    code: 'REC-2026-8092',
-    date: '24/5/2026 10:15:40',
-    name: 'Silvia Valenzuela Roldán',
-    dni: '45678912',
-    email: 'silvia.val@outlook.com',
-    phone: '962456789',
-    address: 'Calle Las Orquídeas 300, Dpto 4, Lima',
-    isMinor: false,
-    bienType: 'Servicio',
-    courseName: 'Formación de Peritos',
-    amountPaid: '850.00',
-    claimType: 'Queja',
-    description: 'El personal de administración demoró más de 48 horas en validar mi pago mensual y responder mis consultas sobre la descarga del material de lectura del diplomado de peritos. Exijo una atención más fluida y canales rápidos de validación.',
-    request: 'Mejora en los tiempos de atención y respuesta por correo electrónico administrativo.',
-    status: 'Resuelto',
-    response: 'Estimada Silvia, lamentamos profundamente el inconveniente en los tiempos de validación. Hemos optimizado nuestro sistema de cobros y el equipo financiero cuenta ahora con plazos máximos de 4 horas hábiles para convalidar vouchers. Tu acceso y material están plenamente garantizados. Quedamos a tu entera disposición.',
-    responseDate: '24/5/2026 16:30:10',
+// Mapeo entre el estado del API (Indecopi) y las etiquetas de la UI.
+const API_TO_UI_STATUS: Record<string, UiStatus> = {
+  recibido: 'Pendiente',
+  en_proceso: 'En Proceso',
+  resuelto: 'Resuelto',
+  cerrado: 'Resuelto',
+};
+const UI_TO_API_STATUS: Record<UiStatus, string> = {
+  'Pendiente': 'recibido',
+  'En Proceso': 'en_proceso',
+  'Resuelto': 'resuelto',
+};
+
+function fmtDate(iso?: string | null): string {
+  if (!iso) return '';
+  try {
+    return new Date(iso).toLocaleString('es-PE', { timeZone: 'America/Lima' });
+  } catch {
+    return iso;
   }
-];
+}
+
+// Transforma una fila del API al modelo que consume la UI.
+function mapComplaint(row: any): Complaint {
+  return {
+    id: row.id,
+    code: row.code,
+    date: fmtDate(row.created_at),
+    name: row.full_name,
+    dni: row.document_number,
+    email: row.email,
+    phone: row.phone ?? '',
+    address: row.address ?? '',
+    isMinor: !!row.is_minor,
+    guardianName: row.guardian_name ?? undefined,
+    guardianDni: row.guardian_document_number ?? undefined,
+    bienType: row.claimed_item_type === 'producto' ? 'Producto' : 'Servicio',
+    courseName: row.claimed_item,
+    amountPaid: row.claimed_amount != null ? String(row.claimed_amount) : '',
+    claimType: row.type === 'queja' ? 'Queja' : 'Reclamación',
+    description: row.detail,
+    request: row.consumer_request,
+    status: API_TO_UI_STATUS[row.status] ?? 'Pendiente',
+    response: row.response ?? '',
+    responseDate: row.responded_at ? fmtDate(row.responded_at) : undefined,
+  };
+}
 
 export default function AdminComplaints() {
   const [complaints, setComplaints] = useState<Complaint[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<'All' | 'Reclamación' | 'Queja'>('All');
   const [statusFilter, setStatusFilter] = useState<'All' | 'Pendiente' | 'En Proceso' | 'Resuelto'>('All');
   const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null);
-  
+
   // Modal Edit states
-  const [editStatus, setEditStatus] = useState<'Pendiente' | 'En Proceso' | 'Resuelto'>('Pendiente');
+  const [editStatus, setEditStatus] = useState<UiStatus>('Pendiente');
   const [editResponse, setEditResponse] = useState('');
 
-  // Load and seed if empty
-  const loadComplaints = () => {
+  const loadComplaints = async () => {
+    setLoading(true);
     try {
-      const stored = localStorage.getItem('eduwanka_complaints');
-      if (stored) {
-        setComplaints(JSON.parse(stored));
-      } else {
-        // Seed mock complaints so the screen is not blank
-        localStorage.setItem('eduwanka_complaints', JSON.stringify(MOCK_COMPLAINTS));
-        setComplaints(MOCK_COMPLAINTS);
-      }
+      const { data } = await apiClient.get('/api/v1/aula/admin/complaints', { params: { per_page: 100 } });
+      const rows = Array.isArray(data?.data) ? data.data : [];
+      setComplaints(rows.map(mapComplaint));
     } catch {
-      setComplaints(MOCK_COMPLAINTS);
+      toast.error('No se pudo cargar el Libro de Reclamaciones.');
+      setComplaints([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -106,43 +118,27 @@ export default function AdminComplaints() {
     setSelectedComplaint(null);
   };
 
-  const handleUpdate = () => {
-    if (!selectedComplaint) return;
+  const handleUpdate = async () => {
+    if (!selectedComplaint || saving) return;
 
+    setSaving(true);
     try {
-      const stored = localStorage.getItem('eduwanka_complaints');
-      const list: Complaint[] = stored ? JSON.parse(stored) : [];
-      
-      const idx = list.findIndex(c => c.code === selectedComplaint.code);
-      if (idx !== -1) {
-        list[idx] = {
-          ...list[idx],
-          status: editStatus,
-          response: editResponse,
-          responseDate: editResponse.trim() ? new Date().toLocaleString('es-PE', { timeZone: 'America/Lima' }) : undefined
-        };
-        localStorage.setItem('eduwanka_complaints', JSON.stringify(list));
-        setComplaints(list);
-        toast.success(`Hoja de reclamación ${selectedComplaint.code} actualizada con éxito.`);
-        closeDetail();
+      const payload: { status: string; response?: string } = {
+        status: UI_TO_API_STATUS[editStatus],
+      };
+      if (editResponse.trim()) {
+        payload.response = editResponse.trim();
       }
+
+      const { data } = await apiClient.patch(`/api/v1/aula/admin/complaints/${selectedComplaint.id}`, payload);
+      const updated = mapComplaint(data.data);
+      setComplaints(prev => prev.map(c => (c.id === updated.id ? updated : c)));
+      toast.success(`Hoja de reclamación ${selectedComplaint.code} actualizada con éxito.`);
+      closeDetail();
     } catch {
       toast.error('Error al actualizar el estado de la reclamación.');
-    }
-  };
-
-  const handleDelete = (code: string) => {
-    if (!confirm(`¿Estás seguro de eliminar el reclamo ${code}? Esta acción es irreversible.`)) return;
-
-    try {
-      const stored = localStorage.getItem('eduwanka_complaints');
-      const list: Complaint[] = stored ? JSON.parse(stored) : [];
-      const filtered = list.filter(c => c.code !== code);
-      localStorage.setItem('eduwanka_complaints', JSON.stringify(filtered));
-      setComplaints(filtered);
-      toast.error(`Reclamo ${code} eliminado de la base de datos.`);
-    } catch {
-      toast.error('Error al intentar eliminar el reclamo.');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -178,11 +174,12 @@ export default function AdminComplaints() {
             Supervisa, responde y archiva los reclamos y quejas virtuales ingresados por los estudiantes.
           </p>
         </div>
-        <button 
+        <button
           onClick={loadComplaints}
-          className="flex items-center gap-1.5 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 px-4 py-2.5 rounded-lg text-xs font-bold transition shadow-sm"
+          disabled={loading}
+          className="flex items-center gap-1.5 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 px-4 py-2.5 rounded-lg text-xs font-bold transition shadow-sm disabled:opacity-60"
         >
-          <RefreshCw className="w-3.5 h-3.5 text-secondary" /> Actualizar Lista
+          <RefreshCw className={`w-3.5 h-3.5 text-secondary ${loading ? 'animate-spin' : ''}`} /> Actualizar Lista
         </button>
       </div>
 
@@ -301,13 +298,8 @@ export default function AdminComplaints() {
                     >
                       <Eye className="w-3.5 h-3.5 text-secondary" /> Gestionar
                     </button>
-                    <button
-                      onClick={() => handleDelete(comp.code)}
-                      className="inline-flex items-center justify-center bg-red-50 hover:bg-red-100 border border-red-100 text-red-600 p-1.5 rounded-lg transition"
-                      title="Eliminar"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
+                    {/* El Libro de Reclamaciones es un registro legal: los
+                        reclamos no se eliminan, solo se gestionan/responden. */}
                   </td>
                 </tr>
               ))}
@@ -472,9 +464,10 @@ export default function AdminComplaints() {
                 </button>
                 <button
                   onClick={handleUpdate}
-                  className="bg-primary text-white font-sans font-bold text-xs uppercase tracking-widest px-6 py-2.5 rounded-lg shadow hover:brightness-110 transition"
+                  disabled={saving}
+                  className="bg-primary text-white font-sans font-bold text-xs uppercase tracking-widest px-6 py-2.5 rounded-lg shadow hover:brightness-110 transition disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  Guardar Cambios y Notificar
+                  {saving ? 'Guardando…' : 'Guardar Cambios y Notificar'}
                 </button>
               </div>
 

@@ -75,8 +75,10 @@ class AssignmentController extends Controller
         $this->authorizedCourse($request, $assignment->course);
         $user = $request->user();
 
+        $allowedExtensions = implode(',', config('uploads.content_item_extensions'));
+
         $request->validate([
-            'file'    => ['sometimes', 'file', 'max:20480'], // 20MB
+            'file'    => ['sometimes', 'file', 'max:20480', "mimes:{$allowedExtensions}"],
             'comment' => ['sometimes', 'nullable', 'string', 'max:2000'],
         ]);
 

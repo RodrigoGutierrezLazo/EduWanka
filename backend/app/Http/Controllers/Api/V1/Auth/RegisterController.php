@@ -7,7 +7,9 @@ use App\Models\User;
 use App\Services\TenantManager;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
 
 class RegisterController extends Controller
@@ -22,12 +24,17 @@ class RegisterController extends Controller
             ], 400);
         }
 
+        // La unicidad de email/dni ahora es POR TENANT (hallazgo 2.1): dos
+        // instituciones distintas pueden tener un usuario con el mismo correo o
+        // DNI sin colisionar. Acotamos la regla `unique` al tenant en contexto.
+        $tenantId = $tenantManager->getTenantId();
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'dni' => ['required', 'string', 'max:20', 'unique:users,dni'],
+            'dni' => ['required', 'string', 'max:20', Rule::unique('users', 'dni')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
             'phone' => ['required', 'string', 'max:20'],
             'city' => ['nullable', 'string', 'max:255'],
         ]);
@@ -44,7 +51,15 @@ class RegisterController extends Controller
             'tenant_id' => $tenantManager->getTenantId(),
         ]);
 
-        $token = $user->createToken('auth')->plainTextToken;
+        Auth::guard('web')->login($user);
+
+        // Ver nota en LoginController: solo regeneramos la sesión si Sanctum
+        // realmente inició una para esta petición (request reconocida como del
+        // SPA). De lo contrario `$request->session()` lanzaría
+        // `RuntimeException: Session store not set on request.`
+        if ($request->hasSession()) {
+            $request->session()->regenerate();
+        }
 
         return response()->json([
             'data' => [
@@ -52,7 +67,6 @@ class RegisterController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'role' => $user->role,
-                'token' => $token,
             ],
         ], 201);
     }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\TenantManager;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -57,17 +58,21 @@ class AdminUsersController extends Controller
             $query->where('role', $role);
         }
 
-        return response()->json($query->paginate((int) $request->query('per_page', 50)));
+        return response()->json($query->paginate(min((int) $request->query('per_page', 50), 200)));
     }
 
     public function store(Request $request): JsonResponse
     {
         $allowed = $this->allowedRolesFor($request);
 
+        // Unicidad de email por tenant (hallazgo 2.1): el correo solo debe ser
+        // único dentro de la institución en contexto, no globalmente.
+        $tenantId = app(TenantManager::class)->getTenantId();
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255', 'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s.\-,]+$/u'],
             'last_name' => ['nullable', 'string', 'max:255', 'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s.\-,]+$/u'],
-            'email' => ['required', 'email:rfc,dns', 'max:255', 'unique:users,email'],
+            'email' => ['required', 'email:rfc,dns', 'max:255', Rule::unique('users', 'email')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
             'password' => ['required', 'string', 'min:8'],
             'role' => ['required', Rule::in($allowed)],
             'dni' => ['nullable', 'string', 'max:30', 'regex:/^[a-zA-Z0-9]+$/'],
@@ -106,7 +111,7 @@ class AdminUsersController extends Controller
         $data = $request->validate([
             'name' => ['sometimes', 'required', 'string', 'max:255', 'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s.\-,]+$/u'],
             'last_name' => ['nullable', 'string', 'max:255', 'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s.\-,]+$/u'],
-            'email' => ['sometimes', 'required', 'email:rfc,dns', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'email' => ['sometimes', 'required', 'email:rfc,dns', 'max:255', Rule::unique('users', 'email')->ignore($user->id)->where(fn ($q) => $q->where('tenant_id', $user->tenant_id))],
             'password' => ['nullable', 'string', 'min:8'],
             'role' => ['sometimes', 'required', Rule::in($allowed)],
             'dni' => ['nullable', 'string', 'max:30', 'regex:/^[a-zA-Z0-9]+$/'],

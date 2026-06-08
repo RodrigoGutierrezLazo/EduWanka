@@ -164,9 +164,13 @@ class AdminSpecialtyController extends Controller
             Storage::disk('public')->delete(ltrim($specialty->brochure_pdf_path, '/'));
         }
 
+        // Nunca usar el nombre de archivo del cliente como nombre físico
+        // (hallazgo 2.5): puede contener path traversal, caracteres de control
+        // o colisionar/sobrescribir otros archivos. Generamos un nombre opaco
+        // con UUID y conservamos solo la extensión validada (pdf).
         $file = $request->file('file');
-        $originalName = $file->getClientOriginalName();
-        $path = $file->storeAs('brochures', $originalName, 'public');
+        $fileName = Str::uuid()->toString() . '.' . $file->getClientOriginalExtension();
+        $path = $file->storeAs('brochures', $fileName, 'public');
 
         $specialty->update(['brochure_pdf_path' => $path]);
 

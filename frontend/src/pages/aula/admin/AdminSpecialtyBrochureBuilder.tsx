@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../../lib/apiClient';
+import { logger } from '../../../lib/logger';
 import ListEditor from '../../../components/ListEditor';
 import {
   Target, ArrowLeft, Save, Loader2, XCircle, Laptop,
@@ -101,7 +102,7 @@ export default function AdminSpecialtyBrochureBuilder() {
           const { data } = await apiClient.get('/api/v1/admin/teachers');
           setAvailableTeachers(data.data ?? data ?? []);
         } catch (err) {
-          console.error('Error fetching teachers for brochure', err);
+          logger.error('Error fetching teachers for brochure', err);
         }
       };
       fetchTeachers();

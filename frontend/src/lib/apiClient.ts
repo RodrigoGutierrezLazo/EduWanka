@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { clearAllAuthStorages, getAccessToken } from './auth';
+import { clearAllAuthStorages } from './auth';
 
 import { getActiveTenantSlug } from './tenant';
 
@@ -9,18 +9,16 @@ export const apiClient = axios.create({
   baseURL: apiBaseUrl,
   timeout: 15000,
   withCredentials: true,
+  // La API y el SPA siempre comparten origen (proxy en dev, mismo dominio en
+  // producción), por lo que es seguro adjuntar el token CSRF de la cookie
+  // XSRF-TOKEN en cada petición de escritura (requerido por Sanctum SPA).
+  withXSRFToken: true,
   headers: {
     Accept: 'application/json',
   },
 });
 
 apiClient.interceptors.request.use((config) => {
-  const token = getAccessToken();
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
   const tenantSlug = getActiveTenantSlug();
   if (tenantSlug) {
     config.headers['X-Tenant-Slug'] = tenantSlug;
@@ -28,6 +26,15 @@ apiClient.interceptors.request.use((config) => {
 
   return config;
 });
+
+/**
+ * Solicita la cookie XSRF-TOKEN antes de operaciones de autenticación
+ * (login/registro), tal como requiere el modo SPA de Laravel Sanctum
+ * para que las peticiones subsecuentes superen la verificación CSRF.
+ */
+export async function ensureCsrfCookie(): Promise<void> {
+  await apiClient.get('/sanctum/csrf-cookie');
+}
 
 apiClient.interceptors.response.use(
   (response) => response,

@@ -31,6 +31,7 @@ import Faq from "./pages/Faq";
 import { hasActiveTenant } from "./lib/tenant";
 import { apiClient } from "./lib/apiClient";
 import { getCurrentUserRole } from "./lib/auth";
+import { logger } from "./lib/logger";
 
 // Custom Assets
 import wsBtn from "../assets/ws-btn.png";
@@ -225,7 +226,7 @@ export default function App() {
               name: tenant.name,
             }));
           } catch (e) {
-            console.warn('Unable to cache tenant colors', e);
+            logger.warn('Unable to cache tenant colors', e);
           }
         } else {
           // Defaults

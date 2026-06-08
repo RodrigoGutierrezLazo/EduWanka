@@ -118,8 +118,10 @@ class AdminSettingsController extends Controller
      */
     public function uploadSettingFile(Request $request): JsonResponse
     {
+        $allowedExtensions = implode(',', config('uploads.content_item_extensions'));
+
         $request->validate([
-            'file'   => ['required', 'file', 'max:51200'], // Allow up to 50MB for videos
+            'file'   => ['required', 'file', 'max:51200', "mimes:{$allowedExtensions}"],
             'folder' => ['required', 'string', 'in:testimonials_photos,testimonials_videos,convenios,tenant_logos,payment_logos'],
         ]);
 

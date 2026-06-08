@@ -4,7 +4,7 @@ namespace Tests\Feature\Auth;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Sanctum\PersonalAccessToken;
+use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -27,15 +27,39 @@ class AuthSecurityTest extends TestCase
             'role' => 'student',
         ]);
 
-        $response = $this->postJson('/api/v1/auth/login', [
-            'email' => $user->email,
-            'password' => 'Secret123!',
-        ]);
+        $response = $this->withHeaders(['Origin' => 'http://localhost:3000'])
+            ->postJson('/api/v1/auth/login', [
+                'email' => $user->email,
+                'password' => 'Secret123!',
+            ]);
 
         $response
             ->assertOk()
             ->assertJsonPath('data.email', 'student@example.test')
-            ->assertJsonPath('data.role', 'student');
+            ->assertJsonPath('data.role', 'student')
+            ->assertJsonMissingPath('data.token');
+
+        // La autenticación queda respaldada por la sesión (cookie httpOnly),
+        // no por un token de API expuesto al JavaScript del navegador.
+        $this->assertAuthenticatedAs($user, 'web');
+    }
+
+    public function test_login_does_not_expose_an_api_token_in_the_response(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'no-token@example.test',
+            'password' => bcrypt('Secret123!'),
+            'role' => 'student',
+        ]);
+
+        $response = $this->withHeaders(['Origin' => 'http://localhost:3000'])
+            ->postJson('/api/v1/auth/login', [
+                'email' => $user->email,
+                'password' => 'Secret123!',
+            ]);
+
+        $response->assertOk();
+        $this->assertArrayNotHasKey('token', $response->json('data'));
     }
 
     public function test_student_cannot_access_admin_endpoint(): void
@@ -79,7 +103,7 @@ class AuthSecurityTest extends TestCase
         $response->assertOk();
     }
 
-    public function test_logout_revokes_current_token(): void
+    public function test_logout_destroys_the_authenticated_session(): void
     {
         $user = User::factory()->create([
             'email' => 'logout@example.test',
@@ -87,18 +111,55 @@ class AuthSecurityTest extends TestCase
             'role' => 'student',
         ]);
 
-        $loginResponse = $this->postJson('/api/v1/auth/login', [
-            'email' => $user->email,
-            'password' => 'Secret123!',
-        ]);
+        $this->withHeaders(['Origin' => 'http://localhost:3000'])
+            ->postJson('/api/v1/auth/login', [
+                'email' => $user->email,
+                'password' => 'Secret123!',
+            ])
+            ->assertOk();
 
-        $token = $loginResponse->json('data.token');
+        $this->assertAuthenticatedAs($user, 'web');
 
-        $this->withHeader('Authorization', "Bearer {$token}")
+        $this->withHeaders(['Origin' => 'http://localhost:3000'])
             ->postJson('/api/v1/auth/logout')
             ->assertOk();
 
-        $this->assertNull(PersonalAccessToken::findToken($token));
+        $this->assertGuest('web');
+    }
+
+    public function test_protected_route_rejects_request_after_logout(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'logout-me@example.test',
+            'password' => bcrypt('Secret123!'),
+            'role' => 'student',
+        ]);
+
+        $this->withHeaders(['Origin' => 'http://localhost:3000'])
+            ->postJson('/api/v1/auth/login', [
+                'email' => $user->email,
+                'password' => 'Secret123!',
+            ])
+            ->assertOk();
+
+        // Sanctum resuelve su guard vía `Auth::viaRequest`, que cachea el
+        // usuario autenticado en la instancia de `RequestGuard`. En un proceso
+        // real cada petición HTTP crea una instancia nueva, pero el harness de
+        // pruebas reutiliza `$this->app` entre llamadas `call()` sucesivas;
+        // `forgetGuards()` fuerza una resolución fresca y simula fielmente
+        // peticiones HTTP independientes (patrón recomendado por Laravel para
+        // probar flujos multi-petición de autenticación).
+        Auth::forgetGuards();
+
+        $this->withHeaders(['Origin' => 'http://localhost:3000'])
+            ->postJson('/api/v1/auth/logout')
+            ->assertOk();
+
+        Auth::forgetGuards();
+
+        $this->withHeaders(['Origin' => 'http://localhost:3000'])
+            ->getJson('/api/v1/auth/me')
+            ->assertUnauthorized();
     }
 
     public function test_prof_can_access_prof_endpoint(): void

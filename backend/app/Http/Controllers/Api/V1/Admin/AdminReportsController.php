@@ -118,7 +118,7 @@ class AdminReportsController extends Controller
                 'bank_entity' => $purchase->bank_entity,
                 'operation_number' => $purchase->operation_number,
                 'receipt_url' => $purchase->receipt_path
-                    ? '/storage/' . ltrim($purchase->receipt_path, '/')
+                    ? route('api.v1.files.receipt', ['purchase' => $purchase->id], false)
                     : null,
                 'status' => $purchase->status,
                 'validated_at' => $audit?->created_at,

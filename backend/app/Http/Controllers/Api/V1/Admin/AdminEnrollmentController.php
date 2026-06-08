@@ -47,7 +47,7 @@ class AdminEnrollmentController extends Controller
                 'delivery_company' => $p->delivery_company,
                 'delivery_address' => $p->delivery_address,
                 'next_course_interest' => $p->next_course_interest,
-                'receipt_url' => $p->receipt_path ? '/storage/' . ltrim($p->receipt_path, '/') : null,
+                'receipt_url' => $p->receipt_path ? route('api.v1.files.receipt', ['purchase' => $p->id], false) : null,
             ]);
 
         return response()->json(['data' => $participants, 'total' => $participants->count()]);

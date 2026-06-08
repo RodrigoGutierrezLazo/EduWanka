@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/apiClient';
+import { logger } from '@/lib/logger';
 import ListEditor from '@/components/ListEditor';
 import { CourseImageUploader } from '@/components/admin/CourseImageUploader';
 import {
@@ -86,7 +87,7 @@ function TeacherPicker({ selectedIds, onChange }: { selectedIds: number[]; onCha
     setLoading(true);
     apiClient.get('/api/v1/admin/teachers', { params: { per_page: 100 } })
       .then(({ data }) => setAllTeachers(data.data ?? []))
-      .catch((err) => console.error("Error loading teachers picker:", err))
+      .catch((err) => logger.error("Error loading teachers picker:", err))
       .finally(() => setLoading(false));
   }, []);
 
@@ -214,7 +215,7 @@ export default function AdminCourseEditor() {
       const { data } = await apiClient.get('/api/v1/admin/specialties');
       setSpecialties(data.data ?? data ?? []);
     } catch (err) {
-      console.error("Error fetching specialties in Course Editor:", err);
+      logger.error("Error fetching specialties in Course Editor:", err);
     }
   };
 
@@ -223,7 +224,7 @@ export default function AdminCourseEditor() {
       const { data } = await apiClient.get('/api/v1/admin/users', { params: { role: 'prof' } });
       setProfessors(data.data ?? []);
     } catch (err) {
-      console.error("Error fetching professors in Course Editor:", err);
+      logger.error("Error fetching professors in Course Editor:", err);
     }
   };
 
@@ -232,7 +233,7 @@ export default function AdminCourseEditor() {
       const { data } = await apiClient.get('/api/v1/admin/certificates/templates');
       setCertTemplates(data.data ?? data ?? []);
     } catch (err) {
-      console.error("Error fetching templates in Course Editor:", err);
+      logger.error("Error fetching templates in Course Editor:", err);
     }
   };
 

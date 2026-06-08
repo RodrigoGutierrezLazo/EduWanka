@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { apiClient } from '../../../lib/apiClient';
+import { logger } from '../../../lib/logger';
 import {
   Compass, Save, Loader2, ImageOff, Laptop, HelpCircle,
   Shield, Eye, Target, Users, FileText, GraduationCap, Star, Video,
@@ -83,7 +84,7 @@ function FileUploadZone({
         toast.error('Error en la respuesta del servidor.');
       }
     } catch (error: any) {
-      console.error(error);
+      logger.error(error);
       toast.error(error?.response?.data?.message || 'Error al subir el archivo.');
     } finally {
       setIsUploading(false);
@@ -310,7 +311,7 @@ export default function AdminInicio() {
         setBrandLogoPath(tenantRes.data.logo_path || '');
       }
     } catch (err) {
-      console.error("Error loading tenant details in admin settings:", err);
+      logger.error("Error loading tenant details in admin settings:", err);
     } finally {
       setLoading(false);
     }

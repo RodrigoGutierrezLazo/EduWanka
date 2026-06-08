@@ -27,7 +27,7 @@ class AdminPaymentsController extends Controller
             $query->whereDate('created_at', '<=', $dateTo);
         }
 
-        $paginated = $query->paginate((int) $request->query('per_page', 50));
+        $paginated = $query->paginate(min((int) $request->query('per_page', 50), 200));
 
         $paginated->getCollection()->transform(function (Purchase $p) {
             return [
@@ -43,7 +43,7 @@ class AdminPaymentsController extends Controller
                 'operation_number' => $p->operation_number,
                 'declared_amount' => $p->declared_amount,
                 'receipt_path' => $p->receipt_path,
-                'receipt_url' => $p->receipt_path ? '/storage/' . ltrim($p->receipt_path, '/') : null,
+                'receipt_url' => $p->receipt_path ? route('api.v1.files.receipt', ['purchase' => $p->id], false) : null,
                 'certificate_delivery' => $p->certificate_delivery,
                 'delivery_company' => $p->delivery_company,
                 'delivery_address' => $p->delivery_address,

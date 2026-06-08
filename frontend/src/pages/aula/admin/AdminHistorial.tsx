@@ -97,8 +97,11 @@ export default function AdminHistorial() {
 
 function DetailModal({ purchase: p, onClose }: { purchase: PurchaseDetail; onClose: () => void }) {
   const [imgError, setImgError] = useState(false);
-  const isImage = p.receipt_url && /\.(jpg|jpeg|png|gif|webp)$/i.test(p.receipt_url);
-  const isPdf = p.receipt_url && /\.pdf$/i.test(p.receipt_url);
+  // El tipo se detecta por la extensión del path físico (receipt_path), no por
+  // receipt_url, que ahora es un endpoint autenticado sin extensión
+  // (/api/v1/files/receipts/{id}, ver hallazgo 2.5).
+  const isImage = p.receipt_path && /\.(jpg|jpeg|png|gif|webp)$/i.test(p.receipt_path);
+  const isPdf = p.receipt_path && /\.pdf$/i.test(p.receipt_path);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>

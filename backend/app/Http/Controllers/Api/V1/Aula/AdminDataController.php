@@ -22,7 +22,7 @@ class AdminDataController
                 'user' => $purchase->user,
                 'course' => $purchase->course,
                 'receipt_url' => $purchase->receipt_path
-                    ? '/storage/' . ltrim($purchase->receipt_path, '/')
+                    ? route('api.v1.files.receipt', ['purchase' => $purchase->id], false)
                     : null,
             ]);
 

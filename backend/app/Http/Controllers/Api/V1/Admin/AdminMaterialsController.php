@@ -75,10 +75,12 @@ class AdminMaterialsController extends Controller
 
     public function storeMaterial(Request $request, UnitSession $session): JsonResponse
     {
+        $allowedExtensions = implode(',', config('uploads.material_extensions'));
+
         $data = $request->validate([
             'type' => ['required', Rule::in(['file', 'video'])],
             'title' => ['required', 'string', 'max:255'],
-            'file' => ['required_if:type,file', 'file', 'max:20480'],
+            'file' => ['required_if:type,file', 'file', 'max:20480', "mimes:{$allowedExtensions}"],
             'url' => ['required_if:type,video', 'nullable', 'url', 'max:2048'],
         ]);
 

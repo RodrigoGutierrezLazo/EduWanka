@@ -20,7 +20,7 @@ use App\Http\Controllers\Api\V1\Purchases\RegisterPurchaseController;
 use App\Http\Controllers\Api\V1\Admin\AdminAttendanceController;
 use App\Http\Controllers\Api\V1\Admin\AdminCertificatesController;
 use App\Http\Controllers\Api\V1\Admin\AdminCoursesController;
-use App\Http\Controllers\Api\V1\Admin\AdminMaterialsController;
+// use App\Http\Controllers\Api\V1\Admin\AdminMaterialsController; // Sprint 5 legacy — eliminado, ver Sprint 11
 use App\Http\Controllers\Api\V1\Admin\AdminPasswordRequestsController;
 use App\Http\Controllers\Api\V1\Admin\AdminPaymentsController;
 use App\Http\Controllers\Api\V1\Admin\AdminReportsController;
@@ -114,6 +114,15 @@ Route::prefix('v1')->group(function (): void {
             ->name('api.v1.checkout.register_purchase');
     });
 
+    // Entrega autenticada de archivos sensibles (hallazgo 2.5): comprobantes de
+    // pago y certificados ya no se sirven como estáticos públicos en /storage.
+    Route::middleware(['auth:sanctum', 'tenant.verify', 'throttle:120,1'])->group(function (): void {
+        Route::get('/files/receipts/{purchase}', [\App\Http\Controllers\Api\V1\Files\SecureFileController::class, 'receipt'])
+            ->name('api.v1.files.receipt');
+        Route::get('/files/certificates/{certificate}', [\App\Http\Controllers\Api\V1\Files\SecureFileController::class, 'certificate'])
+            ->name('api.v1.files.certificate');
+    });
+
     Route::post('/payments/mercadopago/webhook', \App\Http\Controllers\Api\V1\Payments\MercadoPagoWebhookController::class)
         ->middleware('throttle:30,1')
         ->name('api.v1.payments.mercadopago.webhook');
@@ -148,15 +157,11 @@ Route::prefix('v1')->group(function (): void {
             Route::post('/admin/attendance/sessions/{session}/open', [AdminAttendanceController::class, 'open'])->name('api.v1.admin.attendance.sessions.open');
             Route::post('/admin/attendance/sessions/{session}/close', [AdminAttendanceController::class, 'close'])->name('api.v1.admin.attendance.sessions.close');
             Route::delete('/admin/attendance/sessions/{session}', [AdminAttendanceController::class, 'destroy'])->name('api.v1.admin.attendance.sessions.destroy');
-            Route::get('/admin/courses/{course}/units', [AdminMaterialsController::class, 'units'])->name('api.v1.admin.materials.units');
-            Route::post('/admin/courses/{course}/units', [AdminMaterialsController::class, 'storeUnit'])->name('api.v1.admin.materials.units.store');
-            Route::delete('/admin/units/{unit}', [AdminMaterialsController::class, 'destroyUnit'])->name('api.v1.admin.materials.units.destroy');
-            Route::get('/admin/units/{unit}/sessions', [AdminMaterialsController::class, 'sessions'])->name('api.v1.admin.materials.sessions');
-            Route::post('/admin/units/{unit}/sessions', [AdminMaterialsController::class, 'storeSession'])->name('api.v1.admin.materials.sessions.store');
-            Route::delete('/admin/unit-sessions/{session}', [AdminMaterialsController::class, 'destroySession'])->name('api.v1.admin.materials.sessions.destroy');
-            Route::get('/admin/sessions/{session}/materials', [AdminMaterialsController::class, 'materials'])->name('api.v1.admin.materials');
-            Route::post('/admin/sessions/{session}/materials', [AdminMaterialsController::class, 'storeMaterial'])->name('api.v1.admin.materials.store');
-            Route::delete('/admin/materials/{material}', [AdminMaterialsController::class, 'destroyMaterial'])->name('api.v1.admin.materials.destroy');
+            // ═══ Sprint 5 legacy (AdminMaterialsController) ELIMINADO ═══
+            // Las tablas course_units/unit_sessions/materials fueron renombradas
+            // a course_modules/module_sections/content_items en Sprint 11. Los
+            // modelos CourseUnit/UnitSession/Material apuntan a tablas inexistentes
+            // y producían 500. Reemplazado por ModuleManagementController (Sprint 11).
             Route::get('/admin/password-requests', [AdminPasswordRequestsController::class, 'index'])->name('api.v1.admin.password-requests');
             Route::post('/admin/password-requests', [AdminPasswordRequestsController::class, 'store'])->name('api.v1.admin.password-requests.store');
             Route::post('/admin/password-requests/{passwordRequest}/resolve', [AdminPasswordRequestsController::class, 'resolve'])->name('api.v1.admin.password-requests.resolve');
@@ -251,6 +256,28 @@ Route::prefix('v1')->group(function (): void {
         ->middleware('throttle:20,1')
         ->name('api.v1.certificates.verify');
 
+    // ─── Libro de Reclamaciones ───────────────────────────────────────────
+    // Endpoints públicos (acceso libre por ley). El ámbito (tenant/general) lo
+    // determina el servidor por el origen, no por el cuerpo de la petición.
+    Route::post('/complaints', [\App\Http\Controllers\Api\V1\Complaints\ComplaintController::class, 'store'])
+        ->middleware('throttle:10,1')
+        ->name('api.v1.complaints.store');
+    Route::get('/complaints/track/{code}', [\App\Http\Controllers\Api\V1\Complaints\ComplaintController::class, 'track'])
+        ->middleware('throttle:30,1')
+        ->name('api.v1.complaints.track');
+
+    // Gestión por admin de institución (acotado al tenant) y vista de superadmin.
+    Route::middleware(['auth:sanctum', 'tenant.verify', 'throttle:120,1'])->group(function (): void {
+        Route::middleware('role:admin,superadmin')->group(function (): void {
+            Route::get('/aula/admin/complaints', [\App\Http\Controllers\Api\V1\Complaints\AdminComplaintController::class, 'index'])->name('api.v1.aula.admin.complaints.index');
+            Route::get('/aula/admin/complaints/{id}', [\App\Http\Controllers\Api\V1\Complaints\AdminComplaintController::class, 'show'])->whereNumber('id')->name('api.v1.aula.admin.complaints.show');
+            Route::patch('/aula/admin/complaints/{id}', [\App\Http\Controllers\Api\V1\Complaints\AdminComplaintController::class, 'update'])->whereNumber('id')->name('api.v1.aula.admin.complaints.update');
+        });
+        Route::middleware('role:superadmin')->group(function (): void {
+            Route::get('/aula/superadmin/complaints', [\App\Http\Controllers\Api\V1\Complaints\SuperadminComplaintController::class, 'index'])->name('api.v1.aula.superadmin.complaints.index');
+        });
+    });
+
     Route::middleware(['auth:sanctum', 'tenant.verify'])->group(function (): void {
         Route::get('/aula/access', AulaAccessController::class)->name('api.v1.aula.access');
         Route::get('/aula/student-data', [\App\Http\Controllers\Api\V1\Aula\StudentDataController::class, 'index'])->name('api.v1.aula.student-data');
@@ -270,7 +297,7 @@ Route::prefix('v1')->group(function (): void {
     });
 
     // ─── Sprint 11: Módulos tipo Moodle (admin + profesor) ────────────────
-    Route::middleware(['auth:sanctum', 'tenant.verify'])->group(function () {
+    Route::middleware(['auth:sanctum', 'tenant.verify', 'throttle:120,1'])->group(function () {
         Route::prefix('aula')->name('api.v1.aula.modules.')->group(function () {
             // Módulos
             Route::get('/courses/{course}/modules', [ModuleManagementController::class, 'modules'])->name('index');

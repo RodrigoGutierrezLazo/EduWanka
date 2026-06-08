@@ -260,7 +260,7 @@ class ProfessorCertificateController extends Controller
                 'revoked_at'       => $cert->revoked_at,
                 'revoked_reason'   => $cert->revoked_reason,
                 'file_path'        => $cert->file_path,
-                'file_url'         => $cert->file_path ? '/storage/' . ltrim($cert->file_path, '/') : null,
+                'file_url'         => $cert->file_path ? route('api.v1.files.certificate', ['certificate' => $cert->id], false) : null,
                 'created_at'       => $cert->created_at,
             ]);
 

@@ -33,7 +33,7 @@ class AdminCoursesController extends Controller
             $query->where('is_published', true);
         }
 
-        return response()->json($query->paginate((int) $request->query('per_page', 50)));
+        return response()->json($query->paginate(min((int) $request->query('per_page', 50), 200)));
     }
 
     public function store(Request $request): JsonResponse

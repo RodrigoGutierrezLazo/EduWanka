@@ -36,7 +36,7 @@ class AdminCertificatesController extends Controller
             $query->where('course_id', $request->query('course_id'));
         }
 
-        $certificates = $query->latest()->paginate((int) $request->query('per_page', 50));
+        $certificates = $query->latest()->paginate(min((int) $request->query('per_page', 50), 200));
 
         $certificates->getCollection()->transform(fn (Certificate $certificate) => $this->certificatePayload($certificate));
 
@@ -704,7 +704,9 @@ class AdminCertificatesController extends Controller
             'grade' => $certificate->grade,
             'score' => $certificate->score,
             'file_path' => $certificate->file_path,
-            'file_url' => $certificate->file_path ? $this->publicStorageUrl($certificate->file_path) : null,
+            // Entrega autenticada (hallazgo 2.5): el PDF del certificado se sirve
+            // vía endpoint con auth + verificación de tenant, no como estático.
+            'file_url' => $certificate->file_path ? route('api.v1.files.certificate', ['certificate' => $certificate->id], false) : null,
             'status' => $certificate->status,
             'is_revoked' => $certificate->isRevoked(),
             'revoked_at' => $certificate->revoked_at,

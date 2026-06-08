@@ -97,7 +97,7 @@ class TenantManagementController
     public function uploadLogo(Request $request): JsonResponse
     {
         $request->validate([
-            'file' => ['required', 'file', 'image', 'mimes:jpg,jpeg,png,webp,svg', 'max:2048'],
+            'file' => ['required', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
         $file = $request->file('file');

@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { Lock, Mail, User, Phone, MapPin, CreditCard, ArrowRight, GraduationCap, AlertCircle, CheckCircle } from "lucide-react";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { apiClient } from "@/lib/apiClient";
+import { apiClient, ensureCsrfCookie } from "@/lib/apiClient";
 import { clearAllAuthStorages, setActiveAuthSource } from "@/lib/auth";
 
 export default function Register() {
@@ -44,15 +44,16 @@ export default function Register() {
     try {
       clearAllAuthStorages();
 
+      // Sanctum SPA: se requiere la cookie XSRF-TOKEN antes de POSTs de auth
+      await ensureCsrfCookie();
+
       const { data: res } = await apiClient.post("/api/v1/auth/register", formData);
 
-      const { token, ...user } = res.data;
-      
+      const user = res.data;
+
       // Guardar sesión por defecto en sessionStorage (para proteger accesos)
-      sessionStorage.setItem("eduwanka_access_token", token);
       sessionStorage.setItem("eduwanka_user", JSON.stringify(user));
       // Fallback a localStorage para compatibilidad
-      localStorage.setItem("eduwanka_access_token", token);
       localStorage.setItem("eduwanka_user", JSON.stringify(user));
       setActiveAuthSource("session");
 

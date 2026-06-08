@@ -6,6 +6,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Services\TenantManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
@@ -31,7 +32,10 @@ class RegisterAndRecoveryTest extends TestCase
 
     public function test_student_can_register_successfully(): void
     {
-        $response = $this->withHeader('X-Tenant-Slug', 'eduwanka-academy')
+        $response = $this->withHeaders([
+                'Origin' => 'http://localhost:3000',
+                'X-Tenant-Slug' => 'eduwanka-academy',
+            ])
             ->postJson('/api/v1/auth/register', [
                 'name' => 'Carlos',
                 'last_name' => 'Mendoza',
@@ -45,10 +49,17 @@ class RegisterAndRecoveryTest extends TestCase
 
         $response->assertStatus(201)
             ->assertJsonStructure([
-                'data' => ['id', 'name', 'email', 'role', 'token']
+                'data' => ['id', 'name', 'email', 'role']
             ])
             ->assertJsonPath('data.email', 'carlos.mendoza@example.test')
             ->assertJsonPath('data.role', 'student');
+
+        // El registro autentica directamente vía sesión (cookie httpOnly);
+        // ya no se emite ni se expone un token de API en la respuesta.
+        $this->assertArrayNotHasKey('token', $response->json('data'));
+
+        $user = User::where('email', 'carlos.mendoza@example.test')->firstOrFail();
+        $this->assertAuthenticatedAs($user, 'web');
 
         $this->assertDatabaseHas('users', [
             'email' => 'carlos.mendoza@example.test',
@@ -143,14 +154,30 @@ class RegisterAndRecoveryTest extends TestCase
             ->assertJsonPath('message', 'Tu contraseña ha sido restablecida con éxito.');
 
         // 5. Validar que la contraseña cambió e iniciar sesión
-        $loginResponse = $this->withHeader('X-Tenant-Slug', 'eduwanka-academy')
+        // Las llamadas a `/auth/*` solo arrancan sesión cuando Sanctum reconoce
+        // la petición como proveniente del SPA (Origin/Referer en
+        // SANCTUM_STATEFUL_DOMAINS); replicamos ese encabezado como lo haría
+        // el frontend real.
+        Auth::forgetGuards();
+
+        $loginResponse = $this->withHeaders([
+                'Origin' => 'http://localhost:3000',
+                'X-Tenant-Slug' => 'eduwanka-academy',
+            ])
             ->postJson('/api/v1/auth/login', [
                 'email' => 'carlos.recovery@example.test',
                 'password' => 'NewPassword123!',
             ]);
 
         $loginResponse->assertOk()
-            ->assertJsonStructure(['data' => ['token']]);
+            ->assertJsonPath('data.email', 'carlos.recovery@example.test');
+
+        // La nueva contraseña autentica vía sesión httpOnly; ya no se expone
+        // ningún token de API en la respuesta de login.
+        $this->assertArrayNotHasKey('token', $loginResponse->json('data'));
+
+        $user->refresh();
+        $this->assertAuthenticatedAs($user, 'web');
     }
 
     public function test_forgot_password_never_leaks_token_when_mail_sending_fails(): void

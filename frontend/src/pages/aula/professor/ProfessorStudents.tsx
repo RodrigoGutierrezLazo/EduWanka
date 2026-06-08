@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { apiClient } from '../../../lib/apiClient';
+import { logger } from '../../../lib/logger';
 import { 
   Users, Search, Loader, 
   ChevronRight, Calendar, Star, FileVideo
@@ -34,7 +35,7 @@ export default function ProfessorStudents() {
           setTotalVideos(studentsRes.data.total_videos || 0);
         }
       } catch (err: any) {
-        console.error(err);
+        logger.error(err);
       } finally {
         setLoading(false);
       }
@@ -51,13 +52,13 @@ export default function ProfessorStudents() {
       setSessions(response.data.sessions || []);
       setTotalVideos(response.data.total_videos || 0);
     } catch (err) {
-      console.error(err);
+      logger.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredStudents = students.filter(s => 
+  const filteredStudents = students.filter(s =>
     s.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
     s.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -73,7 +74,7 @@ export default function ProfessorStudents() {
       setStudents(response.data.students || []);
       setSessions(response.data.sessions || []);
     } catch (err) {
-      console.error(err);
+      logger.error(err);
     } finally {
       setCreatingSession(false);
     }
@@ -99,7 +100,7 @@ export default function ProfessorStudents() {
         attended
       });
     } catch (err) {
-      console.error(err);
+      logger.error(err);
       // Revert on error
       const response = await apiClient.get(`/api/v1/prof/courses/${selectedCourse}/attendance`);
       setStudents(response.data.students || []);

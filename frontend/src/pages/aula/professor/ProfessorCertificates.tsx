@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { apiClient } from '../../../lib/apiClient';
+import { logger } from '../../../lib/logger';
 import {
   Award, CheckCircle, XCircle, Loader,
   Search, Download, Mail, Trash2,
@@ -70,7 +71,7 @@ export default function ProfessorCertificates() {
           setSelectedCourse(cId.toString());
         }
       } catch (err) {
-        console.error(err);
+        logger.error(err);
       }
     };
     fetchCourses();
@@ -94,7 +95,7 @@ export default function ProfessorCertificates() {
         setPendingStats(res.data.stats || null);
       }
     } catch (err) {
-      console.error(err);
+      logger.error(err);
     } finally {
       setLoading(false);
     }
@@ -133,7 +134,12 @@ export default function ProfessorCertificates() {
   const resendEmail = async (certId: number) => {
     setSendingEmail(certId);
     try {
-      // TODO: implement backend endpoint for email resend
+      // Backlog (no es un riesgo de seguridad): falta el endpoint de backend
+      // para reenviar el correo de notificación de certificado emitido
+      // (p. ej. POST /api/v1/prof/courses/{course}/certificates/{cert}/resend-email
+      // reutilizando el mailable existente de emisión de certificados).
+      // Mientras no exista, se informa al docente que la función está pendiente
+      // en lugar de simular un envío que nunca ocurre.
       alert('Funcionalidad de reenvío de correo próximamente disponible.');
     } finally {
       setSendingEmail(null);

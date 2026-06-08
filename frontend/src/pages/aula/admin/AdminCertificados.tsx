@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { apiClient } from '@/lib/apiClient';
+import { logger } from '@/lib/logger';
 import {
   Award, Loader, Download, FileUp, Eye, Save, Mail, Trash2,
   ShieldCheck, XCircle, Filter, Search, RotateCcw, Plus, UploadCloud, Loader2
@@ -119,7 +120,7 @@ export default function AdminCertificados() {
         toast.error('Error al subir la imagen.');
       }
     } catch (error: any) {
-      console.error(error);
+      logger.error(error);
       toast.error(error?.response?.data?.message || 'Error al subir la imagen.');
     } finally {
       setIsUploadingImage(false);
@@ -812,7 +813,7 @@ export default function AdminCertificados() {
             toast.error('Error al subir la imagen.');
           }
         } catch (error: any) {
-          console.error(error);
+          logger.error(error);
           toast.error(error?.response?.data?.message || 'Error al subir la imagen.');
         } finally {
           setIsUploadingImage(false);
