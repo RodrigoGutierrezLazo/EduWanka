@@ -56,6 +56,28 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Dominio raíz de la plataforma SaaS (multi-tenant)
+    |--------------------------------------------------------------------------
+    |
+    | Usado por TenantMiddleware para distinguir el dominio raíz del SaaS
+    | (ej. "eduwanka.net.pe", que debe mostrar la landing del SaaS y resolver
+    | al inquilino por defecto) de los subdominios de instituciones (ej.
+    | "colegio-x.eduwanka.net.pe", que deben resolver al inquilino "colegio-x").
+    |
+    | Es necesario configurarlo de forma explícita porque NO se puede inferir
+    | de forma fiable contando segmentos del host: sufijos de dominio de 2
+    | niveles como ".net.pe", ".com.pe" o ".co.uk" hacen que el propio
+    | dominio raíz (3 partes, ej. "eduwanka.net.pe") sea indistinguible de un
+    | subdominio de inquilino (también 3 partes, ej. "demo.eduwanka.com").
+    |
+    | Si se deja vacío, se deriva del host de APP_URL.
+    |
+    */
+
+    'tenant_base_domain' => env('TENANT_BASE_DOMAIN'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

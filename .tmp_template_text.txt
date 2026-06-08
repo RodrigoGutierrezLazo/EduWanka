@@ -1,0 +1,489 @@
+[0][Normal] UNIVERSIDAD CONTINENTAL
+[1][Normal] FACULTAD DE INGENIERÍA
+[2][Normal] ESCUELA ACADÉMICO PROFESIONAL DE INGENIERÍA DE SISTEMAS E INFORMÁTICA
+[4][Normal] PROYECTO
+[5][Normal] “[Título del proyecto del Equipo]”
+[6][Heading 1] PORTADA
+[7][Normal] PRESENTADO POR:
+[9][Normal] ASESOR:
+[10][Normal] DR. MAGLIONI ARANA CAPARACHIN
+[12][Normal] HUANCAYO – PERÚ
+[13][Normal] 2026
+[16][Normal] Aclaración Importante:
+[17][Normal] Cada sección de color ROJO son comentarios e instrucciones guías para el estudiante, en su entrega final, eso debe ser borrado según sea el avance de su proyecto.
+[18][Normal] La estructura del proyecto sigue una lógica de un proyecto real de Ingeniería de Software, comenzando con la descripción del problema, luego se analiza el contexto organizacional, posteriormente se planifica y diseña la solución tecnológica, se implementa el sistema, se ejecutan las pruebas de software y finalmente se analizan los resultados monitoreados.
+[19][Normal] Esta estructura permite evidenciar la aplicación de prácticas modernas de desarrollo como SCRUM, TDD, DevOps y automatización de pruebas, además de integrar conceptos de calidad de software, seguridad informática y métricas basadas en estándares internacionales.
+[20][Heading 1] CONTENIDO GENERAL
+[21][toc 1] PORTADA	i
+[22][toc 1] CONTENIDO GENERAL	ii
+[23][toc 1] CAPÍTULO 1	v
+[24][toc 1] INFORMACIÓN GENERAL DEL PROYECTO	v
+[25][toc 2] 1.1.	Resumen Ejecutivo	v
+[26][toc 2] 1.2.	Introducción	vi
+[27][toc 1] CAPÍTULO 2	vi
+[28][toc 1] CONTEXTO ORGANIZACIONAL Y ANÁLISIS DEL PROBLEMA	vi
+[29][toc 2] 2.1.	Contexto de la Organización	vi
+[30][toc 2] 2.2.	Identificación del Problema	vi
+[31][toc 1] CAPÍTULO 3	vii
+[32][toc 1] ANÁLISIS DE PROCESOS DE NEGOCIO	vii
+[33][toc 2] 3.1.	Descripción del Proceso Actual	vii
+[34][toc 2] 3.2.	Modelado del Proceso Actual (AS-IS)	vii
+[35][toc 2] 3.3.	Problemas del Proceso Actual	vii
+[36][toc 2] 3.4.	Modelado del Proceso Propuesto (TO-BE)	viii
+[37][toc 1] CAPÍTULO 4	viii
+[38][toc 1] ANÁLISIS DE REQUERIMIENTOS DEL SISTEMA	viii
+[39][toc 2] 4.1.	Identificación de Actores del Sistema	viii
+[40][toc 2] 4.2.	Requerimientos Funcionales	viii
+[41][toc 2] 4.3.	Requerimientos no Funcionales	ix
+[42][toc 2] 4.4.	Casos de Uso del Sistema	ix
+[43][toc 1] CAPÍTULO 5	ix
+[44][toc 1] PLANIFICACIÓN DEL PROYECTO Y PLAN DE CALIDAD	ix
+[45][toc 2] 5.1.	Alcance del Proyecto	ix
+[46][toc 2] 5.2.	Herramientas Tecnológicas del Proyecto	ix
+[47][toc 2] 5.3.	Normas y Estándares de Calidad	x
+[48][toc 2] 5.4.	Plan de Pruebas del Proyecto	x
+[49][toc 2] 5.5.	Lineamientos de Seguridad Informática	x
+[50][toc 1] CAPÍTULO 6	x
+[51][toc 1] DISEÑO DEL SISTEMA	x
+[52][toc 2] 6.1.	Arquitectura Conceptual del Sistema	xi
+[53][toc 2] 6.2.	Modelo UML del Sistema	xi
+[54][toc 2] 6.3.	Diseño de Interfaces de Usuario	xi
+[55][toc 2] 6.4.	Diseño de Base de Datos	xi
+[56][toc 1] CAPÍTULO 7	xii
+[57][toc 1] ARQUITECTURA TECNOLÓGICA DEL SISTEMA	xii
+[58][toc 2] 7.1.	Tecnologías del Frontend	xii
+[59][toc 2] 7.2.	Tecnologías del Backend	xii
+[60][toc 2] 7.3.	Base de Datos del Sistema	xii
+[61][toc 2] 7.4.	Infraestructura de Desarrollo	xiii
+[62][toc 1] CAPÍTULO 8	xiii
+[63][toc 1] DESARROLLO DEL SISTEMA	xiii
+[64][toc 2] 8.1.	Iteración 1: Configuración Inicial del Proyecto	xiii
+[65][toc 2] 8.2.	Iteración 2: Desarrollo de Funcionalidades Básicas	xiii
+[66][toc 2] 8.3.	Iteración 3: Implementación de Módulos Funcionales	xiii
+[67][toc 2] 8.4.	Iteraciones Posteriores	xiv
+[68][toc 1] CAPÍTULO 9	xiv
+[69][toc 1] CONTROL DE VERSIONES Y GESTIÓN DEL REPOSITORIO	xiv
+[70][toc 2] 9.1.	Repositorio del Proyecto	xiv
+[71][toc 2] 9.2.	Estrategia de Control de Versiones	xiv
+[72][toc 2] 9.3.	Gestión de Ramas del Proyecto	xiv
+[73][toc 2] 9.4.	Registro de Commits Relevantes	xv
+[74][toc 1] CAPÍTULO 10	xv
+[75][toc 1] DOCKERIZACIÓN Y DESPLIEGUE DE MÓDULOS	xv
+[76][toc 2] 10.1.	Introducción a Docker en el Proyecto	xv
+[77][toc 2] 10.2.	Dockerización del Backend	xv
+[78][toc 2] 10.3.	Dockerización del Frontend	xv
+[79][toc 2] 10.4.	Orquestación con Docker Compose	xv
+[80][toc 1] CAPÍTULO 11	xvi
+[81][toc 1] ESTRATEGIA DE PRUEBAS DE SOFTWARE	xvi
+[82][toc 2] 11.1.	Enfoque de Pruebas del Proyecto	xvi
+[83][toc 2] 11.2.	Niveles de Pruebas Aplicados	xvi
+[84][toc 2] 11.3.	Tipos de Pruebas Ejecutadas	xvi
+[85][toc 2] 11.4.	Plan de Ejecución de Pruebas	xvii
+[86][toc 1] CAPÍTULO 12	xvii
+[87][toc 1] AUTOMATIZACIÓN DE PRUEBAS	xvii
+[88][toc 2] 12.1.	Herramientas de Automatización	xvii
+[89][toc 2] 12.2.	Configuración del Entorno de Pruebas	xvii
+[90][toc 2] 12.3.	Scripts de Pruebas Automatizadas	xvii
+[91][toc 2] 12.4.	Ejecución Automática de Pruebas	xviii
+[92][toc 1] CAPÍTULO 13	xviii
+[93][toc 1] MÉTRICAS DE CALIDAD	xviii
+[94][toc 2] 13.1.	Ejecución de Casos de Pruebas	xviii
+[95][toc 2] 13.2.	Registro de Defectos	xviii
+[96][toc 2] 13.3.	Métricas de Calidad del Software	xviii
+[97][toc 2] 13.4.	Evaluación de Calidad basada en Estándares	xix
+[98][toc 1] CAPÍTULO 14	xix
+[99][toc 1] IMPLEMENTACIÓN Y MONITOREO	xix
+[100][toc 2] 14.1.	Preparación del Entorno de Implementación	xix
+[101][toc 2] 14.2.	Implementación del Sistema	xix
+[102][toc 2] 14.3.	Verificación de Funcionamiento	xix
+[103][toc 2] 14.4.	Monitoreo del Sistema	xx
+[104][toc 1] CONCLUSIONES	xx
+[105][toc 1] RECOMENDACIONES	xx
+[106][toc 1] REFERENCIAS	xx
+[107][toc 1] ANEXOS	xxi
+[111][Heading 1] CAPÍTULO 1
+[112][Heading 1] INFORMACIÓN GENERAL DEL PROYECTO
+[113][Normal] Este capítulo presenta la información básica del proyecto y permite comprender rápidamente el propósito del sistema desarrollado, el contexto académico del trabajo y el alcance general del proyecto.
+[114][Heading 2] Resumen Ejecutivo
+[115][Normal] El resumen ejecutivo presenta una síntesis clara del proyecto desarrollado. Debe permitir comprender rápidamente:
+[116][Normal] el problema identificado
+[117][Normal] la solución tecnológica propuesta
+[118][Normal] las tecnologías utilizadas
+[119][Normal] el enfoque de calidad aplicado
+[120][Normal] los principales resultados obtenidos
+[121][Normal] Debe redactarse de manera concisa y comprensible para cualquier lector.
+[122][Normal] Extensión sugerida: entre media página y una página.
+[123][Heading 2] Introducción
+[124][Normal] La introducción contextualiza el proyecto dentro del campo de la ingeniería de software y del aseguramiento de la calidad del software.
+[125][Normal] Debe incluir:
+[126][Normal] contexto general del proyecto
+[127][Normal] importancia de las pruebas de software en el desarrollo moderno
+[128][Normal] propósito del sistema desarrollado
+[129][Normal] breve descripción de la estructura del informe
+[130][Normal] Este apartado orienta al lector sobre el contenido del documento.
+[131][Heading 1] CAPÍTULO 2
+[132][Heading 1] CONTEXTO ORGANIZACIONAL Y ANÁLISIS DEL PROBLEMA
+[133][Normal] Este capítulo describe el entorno donde se identifica el problema y explica por qué es necesario desarrollar una solución informática.
+[134][Heading 2] Contexto de la Organización
+[135][Normal] Debe describir el escenario organizacional donde surge la necesidad del sistema.
+[136][Normal] Contenido sugerido:
+[137][Normal] descripción de la organización o escenario simulado
+[138][Normal] actividades principales
+[139][Normal] área donde se presenta el problema
+[140][Normal] herramientas tecnológicas utilizadas actualmente
+[141][Normal] Este análisis permite comprender el entorno donde se implementará la solución.
+[142][Heading 2] Identificación del Problema
+[143][Normal] Se describe el problema central que afecta al proceso organizacional.
+[144][Normal] Debe incluir:
+[145][Normal] descripción detallada del problema
+[146][Normal] causas del problema
+[147][Normal] consecuencias operativas
+[148][Normal] impacto en la eficiencia del proceso
+[149][Heading 1] CAPÍTULO 3
+[150][Heading 1] ANÁLISIS DE PROCESOS DE NEGOCIO
+[151][Normal] Este capítulo analiza cómo funcionan los procesos organizacionales antes de implementar el sistema. Se utilizan técnicas de Business Process Management (BPM) para comprender el flujo de trabajo actual.
+[152][Heading 2] Descripción del Proceso Actual
+[153][Normal] Se describe paso a paso cómo se ejecuta actualmente el proceso dentro de la organización.
+[154][Normal] Debe incluir:
+[155][Normal] actores involucrados
+[156][Normal] actividades principales
+[157][Normal] flujo de información
+[158][Heading 2] Modelado del Proceso Actual (AS-IS)
+[159][Normal] Se presenta el diagrama BPM que representa el proceso actual.
+[160][Normal] Este modelo permite identificar:
+[161][Normal] secuencia de actividades
+[162][Normal] responsables del proceso
+[163][Normal] puntos críticos del flujo de trabajo
+[164][Heading 2] Problemas del Proceso Actual
+[165][Normal] A partir del modelo AS-IS se identifican problemas como:
+[166][Normal] procesos manuales
+[167][Normal] duplicación de tareas
+[168][Normal] falta de control de información
+[169][Normal] retrasos en el flujo de trabajo
+[170][Heading 2] Modelado del Proceso Propuesto (TO-BE)
+[171][Normal] Se presenta el modelo BPM del proceso mejorado que incorpora el sistema propuesto. Este modelo muestra cómo la tecnología permitirá:
+[172][Normal] automatizar tareas
+[173][Normal] mejorar el control de información
+[174][Normal] optimizar el flujo de trabajo
+[175][Heading 1] CAPÍTULO 4
+[176][Heading 1] ANÁLISIS DE REQUERIMIENTOS DEL SISTEMA
+[177][Normal] Este capítulo documenta los requerimientos del sistema que será desarrollado. El análisis de requerimientos permite definir qué debe hacer el sistema antes de comenzar su implementación.
+[178][Heading 2] Identificación de Actores del Sistema
+[179][Normal] Se identifican los usuarios que interactuarán con el sistema.
+[180][Normal] Ejemplos:
+[181][Normal] administrador
+[182][Normal] usuario operativo
+[183][Normal] supervisor
+[184][Heading 2] Requerimientos Funcionales
+[185][Normal] Describe las funcionalidades que el sistema debe implementar.
+[186][Normal] Cada requerimiento funcional debe incluir:
+[187][Normal] identificador del requerimiento
+[188][Normal] descripción funcional
+[189][Normal] actor involucrado
+[190][Normal] Ejemplo:
+[191][Normal] RF-01 Registrar usuario.
+[192][Normal] RF-02 Gestionar productos.
+[193][Normal] RF-03 Registrar pedidos
+[194][Heading 2] Requerimientos no Funcionales
+[195][Normal] Define características de calidad del sistema.
+[196][Normal] Ejemplos:
+[197][Normal] rendimiento
+[198][Normal] seguridad
+[199][Normal] disponibilidad
+[200][Normal] usabilidad
+[201][Heading 2] Casos de Uso del Sistema
+[202][Normal] Se presenta el diagrama de casos de uso que muestra las interacciones entre los actores y el sistema.
+[203][Heading 1] CAPÍTULO 5
+[204][Heading 1] PLANIFICACIÓN DEL PROYECTO Y PLAN DE CALIDAD
+[205][Normal] Este capítulo define cómo se organizará el desarrollo del sistema antes de iniciar la implementación. Incluye la planificación del proyecto, el plan de pruebas, los estándares de calidad y las herramientas tecnológicas que se utilizarán.
+[206][Heading 2] Alcance del Proyecto
+[207][Normal] Define los límites del sistema.
+[208][Normal] Debe especificar:
+[209][Normal] funcionalidades incluidas
+[210][Normal] funcionalidades excluidas
+[211][Heading 2] Herramientas Tecnológicas del Proyecto
+[212][Normal] Se describen las tecnologías que se utilizarán durante el desarrollo.
+[213][Normal] Ejemplo:
+[214][Normal] Frontend: React
+[215][Normal] Backend: Laravel
+[216][Normal] Base de datos: MySQL
+[217][Normal] Control de versiones: Git y GitHub
+[218][Normal] Contenedores: Docker
+[219][Normal] Herramienta de pruebas: Cypress
+[220][Heading 2] Normas y Estándares de Calidad
+[221][Normal] Se definen los estándares que guiarán la calidad del software.
+[222][Normal] Ejemplos:
+[223][Normal] ISO 25010 – Calidad del producto software
+[224][Normal] ISO 29119 – Pruebas de software
+[225][Normal] Buenas prácticas de desarrollo seguro
+[226][Heading 2] Plan de Pruebas del Proyecto
+[227][Normal] Define la estrategia de pruebas antes de iniciar el desarrollo.
+[228][Normal] Debe incluir:
+[229][Normal] niveles de pruebas
+[230][Normal] tipos de pruebas
+[231][Normal] herramientas de pruebas
+[232][Normal] estrategia de automatización
+[233][Heading 2] Lineamientos de Seguridad Informática
+[234][Normal] Se establecen principios básicos de seguridad que se aplicarán durante el desarrollo.
+[235][Normal] Ejemplos:
+[236][Normal] validación de datos
+[237][Normal] control de autenticación
+[238][Normal] protección contra ataques comunes
+[239][Heading 1] CAPÍTULO 6
+[240][Heading 1] DISEÑO DEL SISTEMA
+[241][Normal] Este capítulo describe el diseño conceptual del sistema antes de iniciar su implementación. El diseño permite definir cómo se estructurará la solución tecnológica para cumplir con los requerimientos identificados.
+[242][Heading 2] Arquitectura Conceptual del Sistema
+[243][Normal] Se describe la estructura general del sistema desde un punto de vista conceptual.
+[244][Normal] Debe incluir:
+[245][Normal] descripción de los componentes principales del sistema
+[246][Normal] interacción entre frontend, backend y base de datos
+[247][Normal] diagrama conceptual de arquitectura
+[248][Normal] Este apartado permite comprender cómo se organiza la solución tecnológica.
+[249][Heading 2] Modelo UML del Sistema
+[250][Normal] Se presentan los diagramas utilizados para representar la estructura y comportamiento del sistema.
+[251][Normal] Diagramas sugeridos:
+[252][Normal] Diagrama de casos de uso
+[253][Normal] Diagrama de clases
+[254][Normal] Diagrama de secuencia
+[255][Normal] Estos diagramas permiten visualizar la lógica interna del sistema.
+[256][Heading 2] Diseño de Interfaces de Usuario
+[257][Normal] Se presentan los prototipos de interfaz elaborados mediante herramientas de diseño como Figma.
+[258][Normal] Debe incluir:
+[259][Normal] pantallas principales del sistema
+[260][Normal] flujo de navegación entre pantallas
+[261][Normal] descripción funcional de cada interfaz
+[262][Heading 2] Diseño de Base de Datos
+[263][Normal] Describe la estructura de almacenamiento de datos del sistema.
+[264][Normal] Debe incluir:
+[265][Normal] modelo entidad–relación
+[266][Normal] descripción de las tablas
+[267][Normal] claves primarias
+[268][Normal] relaciones entre entidades
+[269][Heading 1] CAPÍTULO 7
+[270][Heading 1] ARQUITECTURA TECNOLÓGICA DEL SISTEMA
+[271][Normal] Este capítulo describe las tecnologías utilizadas para implementar el sistema y cómo interactúan entre sí.
+[272][Heading 2] Tecnologías del Frontend
+[273][Normal] Se describe el uso de React para el desarrollo de la interfaz del sistema.
+[274][Normal] Debe incluir:
+[275][Normal] estructura del proyecto frontend
+[276][Normal] componentes principales
+[277][Normal] manejo de rutas
+[278][Normal] comunicación con el backend
+[279][Heading 2] Tecnologías del Backend
+[280][Normal] Se describe el uso de Laravel para el desarrollo del servidor de aplicaciones.
+[281][Normal] Debe incluir:
+[282][Normal] estructura del proyecto backend
+[283][Normal] controladores
+[284][Normal] modelos
+[285][Normal] servicios
+[286][Heading 2] Base de Datos del Sistema
+[287][Normal] Se describe el uso de MySQL para la gestión de datos.
+[288][Normal] Debe incluir:
+[289][Normal] configuración de base de datos
+[290][Normal] migraciones
+[291][Normal] relaciones entre tablas
+[292][Heading 2] Infraestructura de Desarrollo
+[293][Normal] Se describe el entorno de desarrollo utilizado por el equipo.
+[294][Normal] Ejemplo:
+[295][Normal] servidor local
+[296][Normal] herramientas de desarrollo
+[297][Normal] gestor de dependencias
+[298][Heading 1] CAPÍTULO 8
+[299][Heading 1] DESARROLLO DEL SISTEMA
+[300][Normal] Este capítulo documenta el proceso de desarrollo del software mediante iteraciones o incrementos del sistema. Cada iteración representa un conjunto de funcionalidades implementadas durante el desarrollo del proyecto. Este capítulo es clave porque permite documentar cómo se construyó realmente el sistema.
+[301][Heading 2] Iteración 1: Configuración Inicial del Proyecto
+[302][Normal] Debe documentar:
+[303][Normal] creación del repositorio
+[304][Normal] configuración del proyecto frontend
+[305][Normal] configuración del proyecto backend
+[306][Normal] configuración inicial de la base de datos
+[307][Heading 2] Iteración 2: Desarrollo de Funcionalidades Básicas
+[308][Normal] Debe documentar:
+[309][Normal] endpoints iniciales del backend
+[310][Normal] primeros componentes del frontend
+[311][Normal] conexión entre frontend y backend
+[312][Heading 2] Iteración 3: Implementación de Módulos Funcionales
+[313][Normal] Debe documentar:
+[314][Normal] funcionalidades principales del sistema
+[315][Normal] formularios
+[316][Normal] operaciones CRUD
+[317][Heading 2] Iteraciones Posteriores
+[318][Normal] Cada iteración adicional debe documentar:
+[319][Normal] funcionalidades implementadas
+[320][Normal] mejoras realizadas
+[321][Normal] problemas encontrados
+[322][Normal] soluciones aplicadas
+[323][Normal] Este registro permite evidenciar la evolución del sistema durante el desarrollo.
+[324][Heading 1] CAPÍTULO 9
+[325][Heading 1] CONTROL DE VERSIONES Y GESTIÓN DEL REPOSITORIO
+[326][Normal] Este capítulo describe cómo se gestionó el código fuente del proyecto mediante herramientas de control de versiones.
+[327][Heading 2] Repositorio del Proyecto
+[328][Normal] Debe incluir:
+[329][Normal] enlace al repositorio en GitHub
+[330][Normal] descripción general del repositorio
+[331][Heading 2] Estrategia de Control de Versiones
+[332][Normal] Se describe la estrategia utilizada para organizar el desarrollo del código.
+[333][Normal] Debe incluir:
+[334][Normal] uso de ramas
+[335][Normal] flujo de trabajo Git
+[336][Normal] manejo de commits
+[337][Heading 2] Gestión de Ramas del Proyecto
+[338][Normal] Debe explicar cómo se organizaron las ramas del repositorio.
+[339][Normal] Ejemplo:
+[340][Normal] rama main
+[341][Normal] rama develop
+[342][Normal] ramas de funcionalidades
+[343][Heading 2] Registro de Commits Relevantes
+[344][Normal] Se presentan ejemplos de commits importantes realizados durante el desarrollo del sistema.
+[345][Normal] Esto permite evidenciar la evolución del proyecto.
+[346][Heading 1] CAPÍTULO 10
+[347][Heading 1] DOCKERIZACIÓN Y DESPLIEGUE DE MÓDULOS
+[348][Normal] Este capítulo describe el proceso de dockerización del sistema y cómo se encapsulan los componentes del proyecto en contenedores.
+[349][Heading 2] Introducción a Docker en el Proyecto
+[350][Normal] Se explica el uso de contenedores para facilitar la ejecución del sistema.
+[351][Normal] Debe incluir:
+[352][Normal] ventajas de usar Docker
+[353][Normal] objetivos de la dockerización
+[354][Heading 2] Dockerización del Backend
+[355][Normal] Debe documentar:
+[356][Normal] creación del Dockerfile
+[357][Normal] configuración del entorno de ejecución
+[358][Heading 2] Dockerización del Frontend
+[359][Normal] Debe documentar:
+[360][Normal] configuración del contenedor frontend
+[361][Normal] conexión con backend
+[362][Heading 2] Orquestación con Docker Compose
+[363][Normal] Se describe la configuración del archivo docker-compose para ejecutar todos los servicios del sistema.
+[364][Normal] Debe incluir:
+[365][Normal] servicio frontend
+[366][Normal] servicio backend
+[367][Normal] servicio base de datos
+[368][Heading 1] CAPÍTULO 11
+[369][Heading 1] ESTRATEGIA DE PRUEBAS DE SOFTWARE
+[370][Normal] Este capítulo describe la estrategia general de pruebas definida para garantizar la calidad del sistema desarrollado. El objetivo es verificar que el software cumple con los requerimientos funcionales y no funcionales definidos durante el análisis del proyecto.
+[371][Heading 2] Enfoque de Pruebas del Proyecto
+[372][Normal] Se describe el enfoque general utilizado para las pruebas del sistema.
+[373][Normal] Debe incluir:
+[374][Normal] enfoque de pruebas adoptado
+[375][Normal] integración de pruebas durante el desarrollo
+[376][Normal] relación con el enfoque TDD (Test Driven Development)
+[377][Heading 2] Niveles de Pruebas Aplicados
+[378][Normal] Se describen los diferentes niveles de pruebas implementados en el proyecto.
+[379][Normal] Ejemplos:
+[380][Normal] pruebas unitarias
+[381][Normal] pruebas de integración
+[382][Normal] pruebas funcionales
+[383][Normal] pruebas de aceptación
+[384][Heading 2] Tipos de Pruebas Ejecutadas
+[385][Normal] Se documentan los tipos de pruebas realizados durante el desarrollo del sistema.
+[386][Normal] Ejemplos:
+[387][Normal] pruebas de funcionalidad
+[388][Normal] pruebas de validación de datos
+[389][Normal] pruebas de interfaz
+[390][Normal] pruebas de seguridad básicas
+[391][Heading 2] Plan de Ejecución de Pruebas
+[392][Normal] Se describe cómo se organizó la ejecución de las pruebas durante el proyecto.
+[393][Normal] Debe incluir:
+[394][Normal] calendario de pruebas
+[395][Normal] responsables de pruebas
+[396][Normal] herramientas utilizadas
+[397][Heading 1] CAPÍTULO 12
+[398][Heading 1] AUTOMATIZACIÓN DE PRUEBAS
+[399][Normal] Este capítulo describe el proceso de automatización de pruebas del sistema. La automatización permite ejecutar pruebas de manera repetible y eficiente, reduciendo errores humanos y mejorando el control de calidad.
+[400][Heading 2] Herramientas de Automatización
+[401][Normal] Se describen las herramientas utilizadas para automatizar pruebas.
+[402][Normal] Ejemplo:
+[403][Normal] Cypress para pruebas funcionales en aplicaciones web
+[404][Heading 2] Configuración del Entorno de Pruebas
+[405][Normal] Se documenta la preparación del entorno necesario para ejecutar pruebas automatizadas.
+[406][Normal] Debe incluir:
+[407][Normal] instalación de herramientas
+[408][Normal] configuración del entorno
+[409][Normal] integración con el proyecto
+[410][Heading 2] Scripts de Pruebas Automatizadas
+[411][Normal] Se presentan ejemplos de scripts desarrollados para automatizar pruebas.
+[412][Normal] Debe incluir:
+[413][Normal] estructura de los scripts
+[414][Normal] ejemplos de pruebas automatizadas
+[415][Heading 2] Ejecución Automática de Pruebas
+[416][Normal] Se describe cómo se ejecutan las pruebas automatizadas durante el desarrollo del proyecto.
+[417][Normal] Puede incluir:
+[418][Normal] ejecución manual
+[419][Normal] integración con herramientas de desarrollo
+[420][Heading 1] CAPÍTULO 13
+[421][Heading 1] MÉTRICAS DE CALIDAD
+[422][Normal] Este capítulo presenta los resultados obtenidos durante la ejecución de las pruebas del sistema. Además, se analizan métricas de calidad basadas en estándares internacionales.
+[423][Heading 2] Ejecución de Casos de Pruebas
+[424][Normal] Se documenta la ejecución de los casos de prueba definidos en el plan de pruebas.
+[425][Normal] Debe incluir:
+[426][Normal] lista de casos de prueba ejecutados
+[427][Normal] resultados obtenidos
+[428][Heading 2] Registro de Defectos
+[429][Normal] Se documentan los defectos encontrados durante las pruebas.
+[430][Normal] Debe incluir:
+[431][Normal] descripción del defecto
+[432][Normal] nivel de severidad
+[433][Normal] acción correctiva aplicada
+[434][Heading 2] Métricas de Calidad del Software
+[435][Normal] Se presentan métricas que permiten evaluar la calidad del sistema.
+[436][Normal] Ejemplos:
+[437][Normal] tasa de defectos
+[438][Normal] cobertura de pruebas
+[439][Normal] estabilidad del sistema
+[440][Heading 2] Evaluación de Calidad basada en Estándares
+[441][Normal] Se analiza la calidad del sistema utilizando estándares de calidad de software.
+[442][Normal] Ejemplo:
+[443][Normal] ISO 25010
+[444][Heading 1] CAPÍTULO 14
+[445][Heading 1] IMPLEMENTACIÓN Y MONITOREO
+[446][Normal] Este capítulo describe la fase final de implantación del sistema y las actividades de monitoreo realizadas después de su implementación. El objetivo es asegurar que el sistema funciona correctamente en su entorno de ejecución.
+[447][Heading 2] Preparación del Entorno de Implementación
+[448][Normal] Se describe el proceso de preparación del entorno donde se ejecutará el sistema.
+[449][Normal] Debe incluir:
+[450][Normal] configuración del entorno
+[451][Normal] instalación de dependencias
+[452][Normal] configuración de contenedores Docker
+[453][Heading 2] Implementación del Sistema
+[454][Normal] Se documenta el proceso de puesta en funcionamiento del sistema.
+[455][Normal] Debe incluir:
+[456][Normal] despliegue del frontend
+[457][Normal] despliegue del backend
+[458][Normal] conexión con la base de datos
+[459][Heading 2] Verificación de Funcionamiento
+[460][Normal] Se realizan verificaciones para asegurar que el sistema funciona correctamente después de su implementación.
+[461][Normal] Debe incluir:
+[462][Normal] pruebas básicas de funcionamiento
+[463][Normal] validación de servicios
+[464][Heading 2] Monitoreo del Sistema
+[465][Normal] Se describen actividades de supervisión del sistema después de su implementación.
+[466][Normal] Puede incluir:
+[467][Normal] monitoreo de errores
+[468][Normal] monitoreo de rendimiento
+[469][Normal] registro de eventos del sistema
+[470][Heading 1] CONCLUSIONES
+[471][Normal] Se presentan las principales conclusiones obtenidas durante el desarrollo del sistema.
+[472][Normal] Deben relacionarse con:
+[473][Normal] cumplimiento de los objetivos del proyecto
+[474][Normal] calidad del software desarrollado
+[475][Normal] efectividad de las pruebas aplicadas
+[476][Heading 1] RECOMENDACIONES
+[477][Normal] Se proponen mejoras futuras para el sistema o para el proceso de desarrollo.
+[478][Normal] Ejemplos:
+[479][Normal] ampliación de funcionalidades
+[480][Normal] mejoras en rendimiento
+[481][Normal] ampliación de pruebas automatizadas
+[482][Heading 1] REFERENCIAS
+[483][Normal] Listado de todas las fuentes utilizadas durante el proyecto.
+[484][Normal] Debe incluir:
+[485][Normal] libros
+[486][Normal] documentación técnica
+[487][Normal] recursos web
+[488][Normal] artículos científicos
+[489][Normal] Formato sugerido: APA.
+[490][Heading 1] ANEXOS
+[491][Normal] Se incluyen materiales complementarios que respaldan el proyecto.
+[492][Normal] Ejemplos:
+[493][Normal] capturas del sistema
+[494][Normal] fragmentos de código
+[495][Normal] resultados de pruebas
+[496][Normal] configuraciones del entorno

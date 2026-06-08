@@ -17,16 +17,41 @@ class TenantMiddleware
 
         // 1. Si no hay header, intentar deducir del host (subdominio)
         if (!$tenantSlug) {
-            $host = $request->getHost(); // ej: demo.eduwanka.local, verde.localhost o localhost
-            $parts = explode('.', $host);
-            
-            // Si es un dominio local del tipo algo.localhost, tiene 2 partes
-            if (count($parts) === 2 && $parts[1] === 'localhost') {
-                $tenantSlug = $parts[0];
-            } elseif (count($parts) >= 3) {
-                // Para demo.eduwanka.local o demo.eduwanka.com
-                if ($parts[0] !== 'www') {
+            $host = strtolower($request->getHost()); // ej: demo.eduwanka.local, verde.localhost, eduwanka.net.pe o localhost
+            $baseDomain = $this->baseDomain();
+
+            if ($baseDomain) {
+                // Comparar explícitamente contra el dominio raíz real de la
+                // plataforma en vez de adivinar por cantidad de segmentos:
+                // sufijos de 2 niveles como ".net.pe"/".com.pe"/".co.uk"
+                // hacen que el propio dominio raíz (ej. "eduwanka.net.pe",
+                // 3 partes) sea indistinguible de un subdominio de inquilino
+                // tipo "demo.eduwanka.com" (también 3 partes) si solo se
+                // cuenta el número de segmentos.
+                if ($host === $baseDomain || $host === "www.{$baseDomain}") {
+                    // Dominio raíz del SaaS: sin slug derivado del host
+                    // (cae al inquilino por defecto en el paso 2).
+                } elseif (str_ends_with($host, ".{$baseDomain}")) {
+                    $sub = substr($host, 0, -(strlen($baseDomain) + 1));
+                    $slug = explode('.', $sub)[0];
+                    if ($slug !== 'www') {
+                        $tenantSlug = $slug;
+                    }
+                }
+                // Si el host no coincide ni es subdominio del dominio base
+                // conocido (p.ej. se accedió por IP), no se deduce slug:
+                // cae al inquilino por defecto en el paso 2.
+            } else {
+                $parts = explode('.', $host);
+
+                // Si es un dominio local del tipo algo.localhost, tiene 2 partes
+                if (count($parts) === 2 && $parts[1] === 'localhost') {
                     $tenantSlug = $parts[0];
+                } elseif (count($parts) >= 3) {
+                    // Para demo.eduwanka.local o demo.eduwanka.com
+                    if ($parts[0] !== 'www') {
+                        $tenantSlug = $parts[0];
+                    }
                 }
             }
         }
@@ -63,5 +88,27 @@ class TenantMiddleware
         }
 
         return $next($request);
+    }
+
+    /**
+     * Dominio raíz real de la plataforma SaaS (ej: "eduwanka.net.pe"),
+     * tomado de TENANT_BASE_DOMAIN o, en su defecto, derivado de APP_URL.
+     *
+     * Es necesario configurarlo explícitamente porque NO se puede inferir
+     * de forma fiable contando segmentos del host: sufijos de dominio de
+     * 2 niveles como ".net.pe", ".com.pe" o ".co.uk" hacen que el propio
+     * dominio raíz (3 partes) sea indistinguible de un subdominio de
+     * inquilino (también 3 partes, ej. "demo.eduwanka.com").
+     */
+    private function baseDomain(): ?string
+    {
+        $configured = config('app.tenant_base_domain');
+        if ($configured) {
+            return strtolower(trim($configured));
+        }
+
+        $host = parse_url((string) config('app.url'), PHP_URL_HOST);
+
+        return $host ? strtolower($host) : null;
     }
 }
