@@ -17,7 +17,7 @@ class TenantMiddleware
 
         // 1. Si no hay header, intentar deducir del host (subdominio)
         if (!$tenantSlug) {
-            $host = strtolower($request->getHost()); // ej: demo.eduwanka.local, verde.localhost, eduwanka.net.pe o localhost
+            $host = strtolower($request->getHost()); // ej: demo.eduwanka.local, verde.localhost, demo.eduwanka.net.pe o localhost
             $baseDomain = $this->baseDomain();
 
             if ($baseDomain) {
@@ -26,7 +26,7 @@ class TenantMiddleware
                 // sufijos de 2 niveles como ".net.pe"/".com.pe"/".co.uk"
                 // hacen que el propio dominio raíz (ej. "eduwanka.net.pe",
                 // 3 partes) sea indistinguible de un subdominio de inquilino
-                // tipo "demo.eduwanka.com" (también 3 partes) si solo se
+                // tipo "demo.eduwanka.net.pe" (también 3 partes) si solo se
                 // cuenta el número de segmentos.
                 if ($host === $baseDomain || $host === "www.{$baseDomain}") {
                     // Dominio raíz del SaaS: sin slug derivado del host
@@ -48,7 +48,7 @@ class TenantMiddleware
                 if (count($parts) === 2 && $parts[1] === 'localhost') {
                     $tenantSlug = $parts[0];
                 } elseif (count($parts) >= 3) {
-                    // Para demo.eduwanka.local o demo.eduwanka.com
+                    // Para demo.eduwanka.local o demo.eduwanka.net.pe
                     if ($parts[0] !== 'www') {
                         $tenantSlug = $parts[0];
                     }
@@ -98,7 +98,7 @@ class TenantMiddleware
      * de forma fiable contando segmentos del host: sufijos de dominio de
      * 2 niveles como ".net.pe", ".com.pe" o ".co.uk" hacen que el propio
      * dominio raíz (3 partes) sea indistinguible de un subdominio de
-     * inquilino (también 3 partes, ej. "demo.eduwanka.com").
+     * inquilino (también 3 partes, ej. "demo.eduwanka.net.pe").
      */
     private function baseDomain(): ?string
     {

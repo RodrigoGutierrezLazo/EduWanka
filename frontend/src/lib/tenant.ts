@@ -3,7 +3,7 @@
 // contando segmentos: sufijos de 2 niveles como ".net.pe", ".com.pe" o
 // ".co.uk" hacen que el propio dominio raíz (p.ej. "eduwanka.net.pe", 3
 // partes) sea indistinguible de un subdominio de inquilino tipo
-// "demo.eduwanka.com" (también 3 partes) si solo se cuentan las partes.
+// "demo.eduwanka.net.pe" (también 3 partes) si solo se cuentan las partes.
 const BASE_DOMAIN = (import.meta.env.VITE_APP_BASE_DOMAIN as string | undefined)?.toLowerCase().trim() || null;
 
 export function getActiveTenantSlug(): string | null {

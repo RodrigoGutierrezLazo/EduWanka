@@ -121,7 +121,7 @@ const Hero = () => {
                     <span className="w-3 h-3 rounded-full bg-green-400/80" />
                   </div>
                   <div className="flex-1 h-7 bg-white/5 rounded-lg flex items-center px-3">
-                    <span className="text-[10px] text-white/30 font-medium">tuacademia.eduwanka.com</span>
+                    <span className="text-[10px] text-white/30 font-medium">tuacademia.eduwanka.net.pe</span>
                   </div>
                 </div>
                 {/* Mockup content */}
@@ -603,7 +603,7 @@ const ActiveTenants = () => {
                 </div>
                 <div className="min-w-0">
                   <h4 className="font-bold text-slate-900 truncate">{tenant.name}</h4>
-                  <p className="text-xs text-slate-400 font-medium">{tenant.slug}.eduwanka.com</p>
+                  <p className="text-xs text-slate-400 font-medium">{tenant.slug}.eduwanka.net.pe</p>
                 </div>
               </div>
               <div className="flex items-center justify-between">

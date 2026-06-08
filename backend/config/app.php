@@ -68,7 +68,7 @@ return [
     | de forma fiable contando segmentos del host: sufijos de dominio de 2
     | niveles como ".net.pe", ".com.pe" o ".co.uk" hacen que el propio
     | dominio raíz (3 partes, ej. "eduwanka.net.pe") sea indistinguible de un
-    | subdominio de inquilino (también 3 partes, ej. "demo.eduwanka.com").
+    | subdominio de inquilino (también 3 partes, ej. "demo.eduwanka.net.pe").
     |
     | Si se deja vacío, se deriva del host de APP_URL.
     |

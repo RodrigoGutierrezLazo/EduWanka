@@ -57,7 +57,7 @@ export default function Faq() {
     },
     {
       question: "¿Puedo usar mi propio dominio personalizado (ej: aula.miacademia.com)?",
-      answer: "¡Sí, por supuesto! Aunque te proporcionamos un subdominio gratuito (ej: tuacademia.eduwanka.com), en nuestro plan Profesional y Enterprise puedes configurar y enlazar tu propio dominio de forma totalmente transparente para que tus estudiantes nunca salgan de tu ecosistema de marca."
+      answer: "¡Sí, por supuesto! Aunque te proporcionamos un subdominio gratuito (ej: tuacademia.eduwanka.net.pe), en nuestro plan Profesional y Enterprise puedes configurar y enlazar tu propio dominio de forma totalmente transparente para que tus estudiantes nunca salgan de tu ecosistema de marca."
     },
     {
       question: "¿Cómo recibo los pagos de los cursos que vendo?",
