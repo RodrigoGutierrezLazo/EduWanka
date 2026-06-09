@@ -1,0 +1,57 @@
+# ---------------------------------------------------------------------------
+# EduWanka — Overrides de DESARROLLO para Docker Compose
+#
+# Docker Compose carga automáticamente este archivo junto a docker-compose.yml
+# cuando ejecutas "docker compose up" sin -f explícitos. Sustituye el frontend
+# productivo (Nginx + build estático) por el servidor de desarrollo de Vite
+# con hot-reload (igual que "npm run dev" en local) y agrega phpMyAdmin para
+# inspeccionar la base de datos, tal como se hace con XAMPP.
+#
+# Para usar el perfil "producción-like" (solo Nginx, sin estos extras):
+#   docker compose -f docker-compose.yml up --build
+#
+# Ver: Documentacion/PLAN_DOCKERIZACION_Y_PRUEBAS_E2E_CYPRESS.md (Fase D3).
+# ---------------------------------------------------------------------------
+
+services:
+  backend:
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+    volumes:
+      # Monta el código fuente para reflejar cambios sin reconstruir la imagen
+      # (equivalente a editar archivos mientras corre "php artisan serve" local).
+      - ./backend:/var/www/html
+      - backend_vendor:/var/www/html/vendor
+      - backend_storage:/var/www/html/storage/app
+
+  frontend:
+    build:
+      target: dev
+    environment:
+      VITE_DEV_PROXY: http://backend:8000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    command: ["npm", "run", "dev"]
+
+  phpmyadmin:
+    image: phpmyadmin:5
+    container_name: eduwanka-phpmyadmin
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+    ports:
+      - "8081:80"
+    networks:
+      - eduwanka-net
+
+volumes:
+  backend_vendor:
+  frontend_node_modules:

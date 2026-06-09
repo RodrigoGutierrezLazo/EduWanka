@@ -1,0 +1,20 @@
+# ---------------------------------------------------------------------------
+# EduWanka — Overlay "producción-like" para Docker Compose
+#
+# Publica el puerto del frontend para el target "nginx" del Dockerfile (la SPA
+# compilada y servida por Nginx en el puerto 80 del contenedor, con el mismo
+# proxy reverso hacia /api, /sanctum y /storage que usa Vite en desarrollo —
+# ver frontend/docker/nginx.conf). Se usa en lugar de
+# docker-compose.override.yml (que monta el dev server de Vite con hot-reload
+# y publica 3000:3000) para no chocar al publicar el puerto 3000 del host.
+#
+# Uso:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build
+#
+# Ver: Documentacion/PLAN_DOCKERIZACION_Y_PRUEBAS_E2E_CYPRESS.md (Fase D2/D3).
+# ---------------------------------------------------------------------------
+
+services:
+  frontend:
+    ports:
+      - "3000:80"

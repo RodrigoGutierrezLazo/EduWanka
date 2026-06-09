@@ -1,0 +1,16 @@
+{
+  "_comment": "Credenciales demo provistas por los seeders del backend (DemoTenantSeeder / LocalDemoSeeder), documentadas en README.md > Credenciales Demo. Mantener sincronizado si los seeders cambian.",
+  "student": { "email": "student@eduwanka.local", "password": "Password123!", "role": "student", "dashboard": "/aula/student" },
+  "prof": { "email": "prof@eduwanka.local", "password": "Password123!", "role": "prof", "dashboard": "/aula/professor" },
+  "admin": { "email": "admin@eduwanka.local", "password": "Password123!", "role": "admin", "dashboard": "/aula/admin" },
+  "superadmin": { "email": "superadmin@eduwanka.local", "password": "Password123!", "role": "superadmin", "dashboard": "/aula/superadmin" },
+  "newStudent": {
+    "_comment": "Plantilla para el spec de registro; los specs deben generar un email único (Date.now()) para no chocar con corridas previas.",
+    "name": "Estudiante",
+    "lastName": "De Prueba",
+    "dni": "87654321",
+    "phone": "987654321",
+    "city": "Huancayo",
+    "password": "Password123!"
+  }
+}

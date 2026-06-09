@@ -44,12 +44,17 @@ Ultimos cambios consolidados:
 
 ```text
 EduWanka/
-├── backend/          # API Laravel, modelos, controladores, rutas, migraciones y tests
-├── frontend/         # SPA React/Vite/TypeScript
+├── backend/          # API Laravel, modelos, controladores, rutas, migraciones, tests y Dockerfile
+├── frontend/         # SPA React/Vite/TypeScript, Dockerfile y suite E2E (cypress/)
 ├── Documentacion/    # Analisis, diseno, reportes y auditorias del sistema
 ├── eduwanka.sql      # Dump de base de datos de referencia (no se versiona, ver .gitignore)
 ├── openapi.yaml      # Contrato OpenAPI base
-├── iniciar-eduwanka.bat
+├── docker-compose.yml            # Orquestacion Docker (db + backend + frontend)
+├── docker-compose.override.yml   # Overrides de desarrollo (hot-reload, phpMyAdmin)
+├── .env.docker.example           # Plantilla de variables para Docker Compose
+├── iniciar-eduwanka.bat          # Inicio rapido local (XAMPP + Laravel + Vite)
+├── docker-eduwanka.bat           # Inicio rapido con Docker Compose
+├── Makefile                      # Atajos multiplataforma para Docker Compose
 └── README.md
 ```
 
@@ -99,6 +104,57 @@ iniciar-eduwanka.bat
 ```
 
 El script inicia MySQL de XAMPP, levanta Laravel en `http://localhost:8000` y luego inicia Vite para el frontend.
+
+## Levantar con Docker (alternativa a XAMPP)
+
+Como alternativa al flujo local con XAMPP, el repositorio incluye una
+orquestacion completa con Docker Compose (`docker-compose.yml` +
+`docker-compose.override.yml`): contenedores para MySQL, el backend Laravel
+y el frontend React, con migraciones y seeders ejecutados automaticamente al
+iniciar. Ambos flujos coexisten sin chocar (MySQL del contenedor se expone en
+el puerto `3307` del host, no en el `3306` que usa XAMPP).
+
+Requisitos: Docker Desktop (o Docker Engine + Compose plugin).
+
+```bash
+# 1. Copiar la plantilla de variables de entorno (solo la primera vez)
+copy .env.docker.example .env
+
+# 2. Levantar el stack (modo desarrollo: Vite con hot-reload + phpMyAdmin)
+docker compose up --build
+```
+
+URLs una vez levantado el stack:
+
+```text
+Frontend (Vite dev server con hot-reload):  http://localhost:3000
+Backend / API:                               http://localhost:8000/api/v1
+phpMyAdmin:                                  http://localhost:8081
+```
+
+En Windows tambien puedes usar el script de conveniencia (analogo a
+`iniciar-eduwanka.bat`, pero para Docker):
+
+```bat
+docker-eduwanka.bat        REM levanta el stack (modo desarrollo)
+docker-eduwanka.bat down   REM detiene y elimina los contenedores
+docker-eduwanka.bat test   REM corre "php artisan test" dentro del contenedor
+docker-eduwanka.bat logs   REM sigue los logs de todos los servicios
+```
+
+O, si tienes `make` disponible (Git Bash/WSL), los mismos atajos viven en el
+`Makefile`: `make up`, `make down`, `make test`, `make logs`, `make shell`.
+
+Para un perfil mas cercano a produccion (la SPA compilada y servida por
+Nginx, sin hot-reload ni phpMyAdmin):
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build
+```
+
+El detalle de las decisiones de diseno (Dockerfiles multi-stage, healthchecks,
+estrategia de migraciones automaticas, etc.) esta documentado en
+[`Documentacion/PLAN_DOCKERIZACION_Y_PRUEBAS_E2E_CYPRESS.md`](Documentacion/PLAN_DOCKERIZACION_Y_PRUEBAS_E2E_CYPRESS.md).
 
 ## Credenciales Demo
 
@@ -204,6 +260,22 @@ npm run lint
 npm run build
 ```
 
+Pruebas E2E (Cypress) — requieren el backend (`:8000`) y el frontend (`:3000`)
+corriendo, ya sea en local (XAMPP + `npm run dev`) o con `docker compose up`:
+
+```bash
+cd frontend
+npm run cypress:open   # modo interactivo (recomendado en desarrollo)
+npm run test:e2e       # modo headless, levanta el dev server automaticamente
+```
+
+Antes de la primera corrida, siembra datos limpios para que los specs sean
+reproducibles: `cd backend && php artisan migrate:fresh --seed`. Los
+escenarios cubiertos (catalogo, autenticacion, checkout/matricula, Aula
+Virtual por rol, certificados, Libro de Reclamaciones) y la convencion de
+comandos personalizados (`cy.loginAs`, `cy.seedDb`) estan documentados en
+[`Documentacion/PLAN_DOCKERIZACION_Y_PRUEBAS_E2E_CYPRESS.md`](Documentacion/PLAN_DOCKERIZACION_Y_PRUEBAS_E2E_CYPRESS.md).
+
 ## Documentacion
 
 La carpeta `Documentacion/` reune los analisis, diseños, reportes y auditorias del proyecto:
@@ -214,6 +286,8 @@ Documentacion/
 ├── AUDITORIA_COMPLETA_SISTEMA_2026-06.md
 ├── DESIGN.md
 ├── PLAN_CORRECCIONES_AUDITORIA_Y_LIBRO_RECLAMACIONES.md
+├── IMPLEMENTACION_DOCKERIZACION_Y_CYPRESS_2026-06.md
+├── PLAN_DOCKERIZACION_Y_PRUEBAS_E2E_CYPRESS.md
 ├── REPORTE_SITIO.md
 └── páginawebinfo.md
 ```

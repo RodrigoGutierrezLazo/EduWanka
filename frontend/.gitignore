@@ -6,3 +6,9 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Artefactos generados por las corridas de Cypress (videos, capturas en
+# fallos, descargas de PDFs/certificados durante los specs E2E).
+cypress/videos/
+cypress/screenshots/
+cypress/downloads/

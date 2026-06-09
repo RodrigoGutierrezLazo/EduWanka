@@ -1,0 +1,10 @@
+{
+  "_comment": "Datos de referencia para los specs de catalogo y checkout. No asumir IDs fijos: los specs deben resolver el primer curso disponible vía GET /api/v1/courses, salvo que el seeder garantice un slug estable.",
+  "searchTerm": "Derecho",
+  "categoryFilter": "Derecho Civil",
+  "sampleCertificate": {
+    "_comment": "Certificado sembrado por TestDataSeeder/Sprint11DemoSeeder para validar el verificador público (cypress/e2e/catalog/certificate-verification.cy.ts). Ajustar código/DNI si los seeders cambian.",
+    "code": "EDU-2026-0001",
+    "dni": "12345678"
+  }
+}
