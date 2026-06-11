@@ -1,4 +1,4 @@
-import { motion, useInView } from "motion/react";
+import { motion, animate, useReducedMotion } from "motion/react";
 import {
   ArrowRight,
   GraduationCap,
@@ -23,17 +23,86 @@ import {
 import { Link } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { apiClient } from "../lib/apiClient";
+import Tilt3D from "../components/Tilt3D";
+import DemoShowcase from "../components/DemoShowcase";
 
 /* ═══════════════════════════════════════════════════════════════════
    HERO — Full-width dark section with main CTA
    ═══════════════════════════════════════════════════════════════════ */
+const CountUp = ({
+  to,
+  prefix = "",
+  delay = 0.8,
+}: {
+  to: number;
+  prefix?: string;
+  delay?: number;
+}) => {
+  const [display, setDisplay] = useState("0");
+  const reduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    if (reduceMotion) {
+      setDisplay(to.toLocaleString("es-PE"));
+      return;
+    }
+    const controls = animate(0, to, {
+      duration: 1.8,
+      delay,
+      ease: [0.16, 1, 0.3, 1],
+      onUpdate: (v) => setDisplay(Math.round(v).toLocaleString("es-PE")),
+    });
+    return () => controls.stop();
+  }, [to, delay, reduceMotion]);
+
+  return <>{prefix}{display}</>;
+};
+
+const heroContainer = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.12, delayChildren: 0.1 },
+  },
+};
+
+const heroItem = {
+  hidden: { opacity: 0, y: 28 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] as const },
+  },
+};
+
 const Hero = () => {
+  const reduceMotion = useReducedMotion();
+  const float = (duration: number, distance: number, delay = 0) =>
+    reduceMotion
+      ? {}
+      : {
+          animate: { y: [0, -distance, 0] },
+          transition: { duration, delay, repeat: Infinity, ease: "easeInOut" as const },
+        };
+
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-[#1a0507] via-[#7A0F1F] to-[#2a0509]">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-accent/10 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-primary/20 rounded-full blur-[150px]" />
+        <motion.div
+          className="absolute top-20 left-10 w-72 h-72 bg-accent/10 rounded-full blur-[120px]"
+          animate={reduceMotion ? undefined : { x: [0, 50, 0], y: [0, 30, 0], opacity: [0.7, 1, 0.7] }}
+          transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute bottom-20 right-10 w-96 h-96 bg-primary/20 rounded-full blur-[150px]"
+          animate={reduceMotion ? undefined : { x: [0, -60, 0], y: [0, -40, 0] }}
+          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute top-1/3 right-1/3 w-64 h-64 bg-[#C8A14A]/[0.07] rounded-full blur-[100px]"
+          animate={reduceMotion ? undefined : { scale: [1, 1.3, 1], opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-white/[0.02] rounded-full" />
         {/* Grid pattern */}
         <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.03)_1px,transparent_1px)] [background-size:32px_32px]" />
@@ -43,76 +112,120 @@ const Hero = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
           {/* Left: Text */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="flex items-center gap-3 mb-8">
-              <span className="px-4 py-1.5 bg-accent/15 border border-accent/30 rounded-full text-accent text-[11px] font-black uppercase tracking-widest">
+          <motion.div variants={heroContainer} initial="hidden" animate="visible">
+            <motion.div variants={heroItem} className="flex items-center gap-3 mb-8">
+              <span className="relative overflow-hidden px-4 py-1.5 bg-accent/15 border border-accent/30 rounded-full text-accent text-[11px] font-black uppercase tracking-widest">
                 Plataforma SaaS Educativa
+                {!reduceMotion && (
+                  <motion.span
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/20 to-transparent"
+                    initial={{ x: "-100%" }}
+                    animate={{ x: "150%" }}
+                    transition={{ duration: 2.2, delay: 1.2, repeat: Infinity, repeatDelay: 4, ease: "easeInOut" }}
+                  />
+                )}
               </span>
-            </div>
+            </motion.div>
 
             <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl xl:text-7xl text-white font-extrabold leading-[1.1] tracking-tight mb-8">
-              Crea tu{" "}
-              <span className="text-accent italic">Aula Virtual</span>
-              <br />en minutos
+              <motion.span variants={heroItem} className="block">
+                Crea tu{" "}
+                <span className="relative inline-block text-accent italic">
+                  Aula Virtual
+                  <motion.svg
+                    viewBox="0 0 220 12"
+                    className="absolute -bottom-2 left-0 w-full h-3 text-accent/60"
+                    preserveAspectRatio="none"
+                  >
+                    <motion.path
+                      d="M3 9 Q 60 2 110 6 T 217 5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      initial={{ pathLength: 0, opacity: 0 }}
+                      animate={{ pathLength: 1, opacity: 1 }}
+                      transition={{ duration: 0.9, delay: 1.1, ease: "easeOut" }}
+                    />
+                  </motion.svg>
+                </span>
+              </motion.span>
+              <motion.span variants={heroItem} className="block">en minutos</motion.span>
             </h1>
 
-            <p className="text-lg sm:text-xl text-white/60 max-w-lg leading-relaxed mb-10 font-sans">
+            <motion.p
+              variants={heroItem}
+              className="text-lg sm:text-xl text-white/60 max-w-lg leading-relaxed mb-10 font-sans"
+            >
               La plataforma más completa para instituciones educativas.
               Gestiona cursos, pagos, certificados y más — todo bajo tu propia marca.
-            </p>
+            </motion.p>
 
-            <div className="flex flex-wrap gap-4">
+            <motion.div variants={heroItem} className="flex flex-wrap gap-4">
               <Link
-                to="/login"
+                to="/crear-aula"
                 className="inline-flex items-center gap-2 bg-accent text-[#1a0507] px-8 py-4 rounded-full font-black text-sm uppercase tracking-widest shadow-lg shadow-accent/25 hover:shadow-xl hover:shadow-accent/35 hover:-translate-y-0.5 transition-all duration-300"
               >
                 <Rocket className="w-4 h-4" />
                 Empieza Gratis
               </Link>
               <a
-                href="#como-funciona"
+                href="#demo"
                 className="inline-flex items-center gap-2 border-2 border-white/20 text-white px-8 py-4 rounded-full font-black text-sm uppercase tracking-widest hover:bg-white/10 hover:border-white/30 transition-all duration-300"
               >
                 <Play className="w-4 h-4" />
                 Ver Demo
               </a>
-            </div>
+            </motion.div>
 
             {/* Social proof mini */}
-            <div className="mt-12 flex items-center gap-4">
+            <motion.div variants={heroItem} className="mt-12 flex items-center gap-4">
               <div className="flex -space-x-3">
                 {[1,2,3,4].map(i => (
-                  <div key={i} className="w-9 h-9 rounded-full bg-gradient-to-br from-accent/40 to-primary/60 border-2 border-[#1a0507] flex items-center justify-center text-white text-[10px] font-bold">
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, scale: 0.4 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.9 + i * 0.1, type: "spring", stiffness: 260, damping: 18 }}
+                    className="w-9 h-9 rounded-full bg-gradient-to-br from-accent/40 to-primary/60 border-2 border-[#1a0507] flex items-center justify-center text-white text-[10px] font-bold"
+                  >
                     {String.fromCharCode(64 + i)}
-                  </div>
+                  </motion.div>
                 ))}
               </div>
               <div>
                 <p className="text-white/80 text-sm font-bold">+50 instituciones confían en nosotros</p>
                 <div className="flex items-center gap-1 mt-0.5">
                   {[1,2,3,4,5].map(i => (
-                    <Star key={i} className="w-3 h-3 text-accent fill-accent" />
+                    <motion.span
+                      key={i}
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 1.2 + i * 0.08, type: "spring", stiffness: 300, damping: 15 }}
+                    >
+                      <Star className="w-3 h-3 text-accent fill-accent" />
+                    </motion.span>
                   ))}
                   <span className="text-white/40 text-xs ml-1 font-medium">4.9/5</span>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </motion.div>
 
           {/* Right: Visual mockup */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
+            initial={{ opacity: 0, scale: 0.9, y: 30 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.9, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
             className="hidden lg:block"
           >
-            <div className="relative">
+            <Tilt3D maxTilt={8}>
+            <div className="relative" style={{ transformStyle: "preserve-3d" }}>
               {/* Floating dashboard mockup */}
-              <div className="bg-white/[0.08] backdrop-blur-xl rounded-3xl border border-white/10 p-6 shadow-2xl">
+              <motion.div
+                {...float(7, 10)}
+                className="bg-white/[0.08] backdrop-blur-xl rounded-3xl border border-white/10 p-6 shadow-2xl"
+              >
                 {/* Mockup header */}
                 <div className="flex items-center gap-3 mb-5">
                   <div className="flex gap-1.5">
@@ -127,14 +240,22 @@ const Hero = () => {
                 {/* Mockup content */}
                 <div className="grid grid-cols-3 gap-3 mb-4">
                   {[
-                    { label: "Estudiantes", value: "1,247", color: "from-blue-500/20 to-blue-600/10" },
-                    { label: "Ingresos", value: "S/ 45,320", color: "from-green-500/20 to-green-600/10" },
-                    { label: "Cursos", value: "24", color: "from-purple-500/20 to-purple-600/10" },
+                    { label: "Estudiantes", value: 1247, prefix: "", color: "from-blue-500/20 to-blue-600/10" },
+                    { label: "Ingresos", value: 45320, prefix: "S/ ", color: "from-green-500/20 to-green-600/10" },
+                    { label: "Cursos", value: 24, prefix: "", color: "from-purple-500/20 to-purple-600/10" },
                   ].map((card, i) => (
-                    <div key={i} className={`bg-gradient-to-br ${card.color} rounded-xl p-4 border border-white/5`}>
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.7 + i * 0.12, duration: 0.5 }}
+                      className={`bg-gradient-to-br ${card.color} rounded-xl p-4 border border-white/5`}
+                    >
                       <p className="text-white/40 text-[9px] font-bold uppercase tracking-widest">{card.label}</p>
-                      <p className="text-white font-black text-lg mt-1">{card.value}</p>
-                    </div>
+                      <p className="text-white font-black text-lg mt-1">
+                        <CountUp to={card.value} prefix={card.prefix} delay={0.8 + i * 0.12} />
+                      </p>
+                    </motion.div>
                   ))}
                 </div>
                 {/* Mockup chart bars */}
@@ -142,30 +263,38 @@ const Hero = () => {
                   <p className="text-white/30 text-[9px] font-bold uppercase tracking-widest mb-3">Ingresos Mensuales</p>
                   <div className="flex items-end gap-2 h-20">
                     {[35, 50, 42, 68, 55, 78, 65, 85, 72, 90, 82, 95].map((h, i) => (
-                      <div key={i} className="flex-1 bg-gradient-to-t from-accent/60 to-accent/20 rounded-t-sm transition-all hover:from-accent/80 hover:to-accent/40"
+                      <motion.div
+                        key={i}
+                        initial={{ scaleY: 0 }}
+                        animate={{ scaleY: 1 }}
+                        transition={{ delay: 1 + i * 0.06, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                        className="flex-1 origin-bottom bg-gradient-to-t from-accent/60 to-accent/20 rounded-t-sm transition-colors hover:from-accent/80 hover:to-accent/40"
                         style={{ height: `${h}%` }}
                       />
                     ))}
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
-              {/* Floating notification card */}
+              {/* Floating notification card — translateZ la despega del plano del dashboard */}
               <motion.div
                 initial={{ opacity: 0, x: 30 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 1, duration: 0.5 }}
-                className="absolute -bottom-4 -left-8 bg-white rounded-2xl shadow-2xl p-4 border border-slate-100 max-w-[220px]"
+                className="absolute -bottom-4 -left-8 max-w-[220px]"
+                style={{ z: 55, transformStyle: "preserve-3d" }}
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center shrink-0">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                <motion.div {...float(5, 8, 0.5)} className="bg-white rounded-2xl shadow-2xl p-4 border border-slate-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center shrink-0">
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-slate-900">Pago Validado</p>
+                      <p className="text-[10px] text-slate-400">S/ 350.00 — hace 2min</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs font-bold text-slate-900">Pago Validado</p>
-                    <p className="text-[10px] text-slate-400">S/ 350.00 — hace 2min</p>
-                  </div>
-                </div>
+                </motion.div>
               </motion.div>
 
               {/* Floating certificate card */}
@@ -173,25 +302,35 @@ const Hero = () => {
                 initial={{ opacity: 0, x: -30 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 1.3, duration: 0.5 }}
-                className="absolute -top-4 -right-4 bg-white rounded-2xl shadow-2xl p-4 border border-slate-100"
+                className="absolute -top-4 -right-4"
+                style={{ z: 70, transformStyle: "preserve-3d" }}
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center shrink-0">
-                    <Award className="w-5 h-5 text-accent" />
+                <motion.div {...float(6, 9, 1.2)} className="bg-white rounded-2xl shadow-2xl p-4 border border-slate-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center shrink-0">
+                      <Award className="w-5 h-5 text-accent" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-slate-900">Certificado Emitido</p>
+                      <p className="text-[10px] text-slate-400">Diplomado en Derecho</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs font-bold text-slate-900">Certificado Emitido</p>
-                    <p className="text-[10px] text-slate-400">Diplomado en Derecho</p>
-                  </div>
-                </div>
+                </motion.div>
               </motion.div>
             </div>
+            </Tilt3D>
           </motion.div>
         </div>
       </div>
 
-      {/* Bottom wave/gradient fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#F9F6F0] to-transparent" />
+      {/* Bottom gradient fade: maroon → warm rose → cream, eased multi-stop blend */}
+      <div
+        className="absolute bottom-0 left-0 right-0 h-64 pointer-events-none"
+        style={{
+          background:
+            "linear-gradient(to bottom, rgba(249,246,240,0) 0%, rgba(249,246,240,0.02) 18%, rgba(249,246,240,0.08) 36%, rgba(249,246,240,0.2) 52%, rgba(249,246,240,0.42) 67%, rgba(249,246,240,0.68) 80%, rgba(249,246,240,0.9) 91%, #F9F6F0 100%)",
+        }}
+      />
     </section>
   );
 };
@@ -416,9 +555,9 @@ const Pricing = () => {
     },
     {
       name: "Profesional",
-      price: "S/ 149",
-      period: "/mes",
-      description: "Para instituciones en crecimiento.",
+      price: "S/ 1200",
+      period: "+ S/ 120/mes",
+      description: "Para instituciones en crecimiento. Costo de implementación + suscripción mensual.",
       features: [
         "Cursos ilimitados",
         "Hasta 300 alumnos por curso",
@@ -515,7 +654,7 @@ const Pricing = () => {
               </ul>
 
               <Link
-                to="/login"
+                to={plan.name === "Enterprise" ? "/contacto" : "/crear-aula"}
                 className={`w-full py-3.5 rounded-xl font-bold text-sm uppercase tracking-widest text-center transition-all duration-300 block ${
                   plan.highlighted
                     ? 'bg-primary text-white hover:bg-primary-dark shadow-lg hover:shadow-xl'
@@ -547,22 +686,14 @@ const ActiveTenants = () => {
       .catch(() => {
         // Fallback demo data
         setTenants([
-          { id: 1, name: "Academia Demo", slug: "demo", plan: "pro", status: "active" },
-          { id: 2, name: "Instituto Jurídico Peruano", slug: "ijp", plan: "professional", status: "active" },
-          { id: 3, name: "Centro de Capacitación RRHH", slug: "rrhh", plan: "starter", status: "active" },
+          { id: 1, name: "Academia Demo", slug: "demo" },
+          { id: 2, name: "Instituto Jurídico Peruano", slug: "ijp" },
+          { id: 3, name: "Centro de Capacitación RRHH", slug: "rrhh" },
         ]);
       });
   }, []);
 
   if (tenants.length === 0) return null;
-
-  const planColors: Record<string, string> = {
-    starter: "bg-slate-100 text-slate-600",
-    pro: "bg-accent/10 text-accent",
-    professional: "bg-primary/10 text-primary",
-    enterprise: "bg-purple-100 text-purple-700",
-    free: "bg-green-50 text-green-600",
-  };
 
   return (
     <section className="py-24 md:py-32 bg-white px-6 lg:px-8 border-t border-slate-100">
@@ -607,8 +738,8 @@ const ActiveTenants = () => {
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <span className={`px-2.5 py-1 text-[10px] font-black uppercase tracking-widest rounded-full ${planColors[tenant.plan] || 'bg-slate-100 text-slate-500'}`}>
-                  {tenant.plan}
+                <span className="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest rounded-full bg-primary/5 text-primary">
+                  Aula Virtual
                 </span>
                 <span className="flex items-center gap-1.5 text-[10px] font-bold text-green-600">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_4px_rgba(34,197,94,0.5)]" />
@@ -659,7 +790,7 @@ const FinalCTA = () => {
 
           <div className="flex flex-wrap justify-center gap-4">
             <Link
-              to="/login"
+              to="/crear-aula"
               className="inline-flex items-center gap-2 bg-accent text-[#1a0507] px-10 py-4 rounded-full font-black text-sm uppercase tracking-widest shadow-lg shadow-accent/25 hover:shadow-xl hover:shadow-accent/35 hover:-translate-y-0.5 transition-all duration-300"
             >
               Crear Mi Aula Ahora
@@ -687,6 +818,7 @@ export default function Home() {
       <Hero />
       <Benefits />
       <HowItWorks />
+      <DemoShowcase />
       <Pricing />
       <ActiveTenants />
       <FinalCTA />

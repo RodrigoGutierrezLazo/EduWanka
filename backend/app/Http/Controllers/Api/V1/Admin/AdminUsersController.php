@@ -69,6 +69,16 @@ class AdminUsersController extends Controller
         // único dentro de la institución en contexto, no globalmente.
         $tenantId = app(TenantManager::class)->getTenantId();
 
+        // Límite de estudiantes del plan SaaS (auditoría 2026-06-10)
+        $tenant = app(TenantManager::class)->getTenant();
+        if ($request->input('role') === 'student' && $tenant
+            && ($reason = app(\App\Services\PlanLimits::class)->studentRegistrationBlockedReason($tenant))) {
+            return response()->json([
+                'message' => $reason,
+                'code' => 'plan_limit_reached',
+            ], 402);
+        }
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255', 'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s.\-,]+$/u'],
             'last_name' => ['nullable', 'string', 'max:255', 'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s.\-,]+$/u'],

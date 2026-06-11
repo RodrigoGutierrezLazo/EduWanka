@@ -35,7 +35,7 @@ class TenantManagementController
         return response()->json([
             'message' => 'Institution created successfully.',
             'tenant' => $tenant
-        ], 210); // Laravel standard or 201 Created
+        ], 201);
     }
 
     public function show(Tenant $tenant): JsonResponse
@@ -76,10 +76,13 @@ class TenantManagementController
 
     public function destroy(Tenant $tenant): JsonResponse
     {
+        // Soft delete (auditoría 2026-06-10, hallazgo 2.2): los datos del
+        // inquilino (cursos, certificados, compras) se conservan para un
+        // posible export/restauración; la purga definitiva es un paso aparte.
         $tenant->delete();
 
         return response()->json([
-            'message' => 'Institution deleted successfully.'
+            'message' => 'Institution deactivated successfully. Data is retained for export/restore.'
         ]);
     }
 

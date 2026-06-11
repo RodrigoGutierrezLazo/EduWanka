@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\PlanLimits;
 use App\Services\TenantManager;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -22,6 +23,16 @@ class RegisterController extends Controller
             return response()->json([
                 'message' => 'El contexto de la institución es requerido.'
             ], 400);
+        }
+
+        // Límite de estudiantes del plan SaaS (auditoría 2026-06-10): el plan
+        // starter admite hasta 30 estudiantes; el trial vencido bloquea altas.
+        $reason = app(PlanLimits::class)->studentRegistrationBlockedReason($tenantManager->getTenant());
+        if ($reason !== null) {
+            return response()->json([
+                'message' => $reason,
+                'code' => 'plan_limit_reached',
+            ], 402);
         }
 
         // La unicidad de email/dni ahora es POR TENANT (hallazgo 2.1): dos

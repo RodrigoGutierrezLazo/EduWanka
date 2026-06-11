@@ -52,15 +52,21 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/specialties/{idOrSlug}', [PublicSpecialtiesController::class, 'show'])->name('api.v1.specialties.show');
         Route::get('/settings/hero', [\App\Http\Controllers\Api\V1\PublicSettingsController::class, 'getHeroSettings'])->name('api.v1.settings.hero');
 
-        // Public tenant listing for SaaS landing page
+        // Public tenant listing for SaaS landing page.
+        // No exponemos `plan` ni `status`: es información comercial de cada
+        // cliente (auditoría 2026-06-10, hallazgo 2.3).
         Route::get('/tenants/public', function () {
             $tenants = \App\Models\Tenant::where('status', 'active')
-                ->select('id', 'name', 'slug', 'plan', 'status', 'created_at')
+                ->select('id', 'name', 'slug', 'logo_path', 'created_at')
                 ->orderByDesc('created_at')
                 ->limit(12)
                 ->get();
             return response()->json(['data' => $tenants]);
         })->name('api.v1.tenants.public');
+
+        // Verificación en vivo de disponibilidad de subdominio
+        Route::get('/tenants/check-slug', [\App\Http\Controllers\Api\V1\Tenants\TenantRegistrationController::class, 'checkSlug'])
+            ->name('api.v1.tenants.check-slug');
 
         // Get active tenant details for dynamic branding
         Route::get('/tenant/current', function () {
@@ -85,6 +91,12 @@ Route::prefix('v1')->group(function (): void {
             ]);
         })->name('api.v1.tenant.current');
     });
+
+    // Alta self-service de instituciones (onboarding SaaS): crea tenant +
+    // admin + trial de 30 días. Throttle estricto por ser endpoint público.
+    Route::post('/tenants/register', [\App\Http\Controllers\Api\V1\Tenants\TenantRegistrationController::class, 'register'])
+        ->middleware(app()->isLocal() ? 'throttle:60,1' : 'throttle:5,1')
+        ->name('api.v1.tenants.register');
 
     Route::prefix('auth')->group(function (): void {
         Route::post('/login', LoginController::class)
@@ -190,6 +202,9 @@ Route::prefix('v1')->group(function (): void {
             
             // Tenant/Institution identity Settings
             Route::put('/admin/tenant', [\App\Http\Controllers\Api\V1\Admin\AdminSettingsController::class, 'updateTenantSettings'])->name('api.v1.admin.tenant.update');
+
+            // Mi suscripción: plan, consumo vs. límites y estado del trial
+            Route::get('/admin/subscription', [\App\Http\Controllers\Api\V1\Admin\AdminSubscriptionController::class, 'show'])->name('api.v1.admin.subscription');
         });
 
         Route::middleware('role:prof,superadmin')->group(function () {

@@ -78,6 +78,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Default Tenant Slug
+    |--------------------------------------------------------------------------
+    |
+    | Tenant que atiende requests cuyo host no resuelve a ningún inquilino
+    | (acceso por IP, dominio raíz del SaaS, etc.). Si no se define, se usa
+    | el tenant activo de menor id para un comportamiento determinista.
+    |
+    */
+
+    'default_tenant_slug' => env('DEFAULT_TENANT_SLUG'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

@@ -10,6 +10,7 @@ import { useState, useEffect } from "react";
 import { apiClient } from "../lib/apiClient";
 import { hasActiveTenant } from "../lib/tenant";
 import { logger } from "../lib/logger";
+import Tilt3D from "../components/Tilt3D";
 
 /* ═══════════════════════════════════════════════════════════════════
    COURSES SHOWCASE — SaaS Feature Page
@@ -35,7 +36,7 @@ const CourseHero = () => (
         <p className="font-sans text-xl text-white/60 max-w-2xl leading-relaxed mb-8">
           Crea, organiza y vende cursos con módulos, materiales multimedia, cuestionarios automáticos y certificación integrada — todo desde un panel intuitivo.
         </p>
-        <Link to="/login" className="inline-flex items-center gap-2 bg-accent text-[#1a0507] px-8 py-4 rounded-full font-black text-sm uppercase tracking-widest shadow-lg shadow-accent/25 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+        <Link to="/crear-aula" className="inline-flex items-center gap-2 bg-accent text-[#1a0507] px-8 py-4 rounded-full font-black text-sm uppercase tracking-widest shadow-lg shadow-accent/25 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
           Crear Mi Primer Curso <ArrowRight className="w-4 h-4" />
         </Link>
       </motion.div>
@@ -112,10 +113,16 @@ const CourseImplementation = () => (
           </div>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
-          className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-3xl p-8 border border-slate-200">
+        <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
+          <Tilt3D maxTilt={10} className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-3xl p-8 border border-slate-200">
+          <div style={{ transformStyle: "preserve-3d" }}>
           {/* Mockup of course editor */}
-          <div className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
+          <motion.div
+            animate={{ y: [0, -6, 0] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden"
+            style={{ z: 30, transformStyle: "preserve-3d" }}
+          >
             <div className="bg-primary px-5 py-3 flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-white/80" />
               <span className="text-white text-sm font-bold">Editor de Curso</span>
@@ -129,21 +136,44 @@ const CourseImplementation = () => (
                   <div className="h-3 bg-slate-200 rounded w-3/4 mb-2" />
                   <div className="h-2 bg-slate-100 rounded w-1/2" />
                 </div>
-                <span className="text-[9px] font-black text-green-600 bg-green-50 px-2 py-1 rounded uppercase">Publicado</span>
+                <motion.span
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.8, type: "spring", stiffness: 300, damping: 15 }}
+                  className="text-[9px] font-black text-green-600 bg-green-50 px-2 py-1 rounded uppercase"
+                >
+                  Publicado
+                </motion.span>
               </div>
               {["Módulo 1: Introducción", "Módulo 2: Marco Normativo", "Módulo 3: Casos Prácticos"].map((m, i) => (
-                <div key={i} className="flex items-center gap-3 px-3 py-2.5 bg-slate-50 rounded-lg">
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.3 + i * 0.18, duration: 0.45, ease: "easeOut" }}
+                  className="flex items-center gap-3 px-3 py-2.5 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
+                >
                   <Layers className="w-4 h-4 text-primary/50" />
                   <span className="text-xs font-medium text-slate-600 flex-1">{m}</span>
                   <span className="text-[9px] text-slate-400">{3 + i} items</span>
-                </div>
+                </motion.div>
               ))}
-              <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+              <motion.div
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 1 }}
+                className="flex items-center justify-between pt-3 border-t border-slate-100"
+              >
                 <span className="text-xs text-slate-400 font-medium">3 módulos · 12 secciones</span>
                 <span className="text-xs font-black text-primary">S/ 450.00</span>
-              </div>
+              </motion.div>
             </div>
+          </motion.div>
           </div>
+          </Tilt3D>
         </motion.div>
       </div>
     </div>
@@ -183,7 +213,7 @@ const CourseResults = () => (
       </div>
 
       <div className="text-center mt-16">
-        <Link to="/login" className="inline-flex items-center gap-2 bg-accent text-[#1a0507] px-10 py-4 rounded-full font-black text-sm uppercase tracking-widest shadow-lg shadow-accent/25 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+        <Link to="/crear-aula" className="inline-flex items-center gap-2 bg-accent text-[#1a0507] px-10 py-4 rounded-full font-black text-sm uppercase tracking-widest shadow-lg shadow-accent/25 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
           Crear Mi Aula Ahora <ArrowRight className="w-4 h-4" />
         </Link>
       </div>

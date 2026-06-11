@@ -15,6 +15,28 @@ class TenantMiddleware
         $tenantManager = app(TenantManager::class);
         $tenantSlug = $request->header('X-Tenant-Slug');
 
+        // 0. Dominio propio del inquilino (plan Enterprise): si el host coincide
+        // exactamente con la columna `domain` de un tenant, ese gana. Antes de
+        // esto la columna era decorativa (auditoría 2026-06-10, hallazgo 1.4).
+        if (!$tenantSlug) {
+            $host = strtolower($request->getHost());
+            try {
+                $byDomain = Tenant::where('domain', $host)->first();
+                if ($byDomain) {
+                    if ($byDomain->status === 'suspended') {
+                        return response()->json([
+                            'error' => 'This institution has been suspended.'
+                        ], 403);
+                    }
+                    $tenantManager->setTenant($byDomain);
+                    return $next($request);
+                }
+            } catch (\Exception $e) {
+                // Tabla tenants ausente (tests sin BD): continuar con la
+                // resolución por subdominio.
+            }
+        }
+
         // 1. Si no hay header, intentar deducir del host (subdominio)
         if (!$tenantSlug) {
             $host = strtolower($request->getHost()); // ej: demo.eduwanka.local, verde.localhost, demo.eduwanka.net.pe o localhost
@@ -56,10 +78,21 @@ class TenantMiddleware
             }
         }
 
-        // 2. Si aún no hay slug, usar el primero como default para compatibilidad / fallback
+        // 2. Si aún no hay slug, usar el tenant por defecto. Antes se tomaba el
+        // "primer activo" según el orden natural de la tabla, lo que hacía que
+        // un host desconocido mostrara los datos de un cliente arbitrario y de
+        // forma no determinista (auditoría 2026-06-10, hallazgo 1.3). Ahora se
+        // prioriza DEFAULT_TENANT_SLUG y, en su defecto, el activo de menor id.
         if (!$tenantSlug) {
             try {
-                $defaultTenant = Tenant::where('status', 'active')->first();
+                $configuredDefault = config('app.default_tenant_slug');
+                $defaultTenant = null;
+                if ($configuredDefault) {
+                    $defaultTenant = Tenant::where('slug', $configuredDefault)
+                        ->where('status', 'active')
+                        ->first();
+                }
+                $defaultTenant ??= Tenant::where('status', 'active')->orderBy('id')->first();
                 if ($defaultTenant) {
                     $tenantSlug = $defaultTenant->slug;
                 }

@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Course;
+use App\Services\PlanLimits;
+use App\Services\TenantManager;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -38,6 +40,16 @@ class AdminCoursesController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        // Límites del plan SaaS: el plan starter solo permite 1 curso y el
+        // trial vencido bloquea la creación (auditoría 2026-06-10).
+        $tenant = app(TenantManager::class)->getTenant();
+        if ($tenant && ($reason = app(PlanLimits::class)->courseCreationBlockedReason($tenant))) {
+            return response()->json([
+                'message' => $reason,
+                'code' => 'plan_limit_reached',
+            ], 402);
+        }
+
         $data = $this->validatedCourse($request);
         $data['slug'] = $data['slug'] ?? Str::slug($data['title']);
 

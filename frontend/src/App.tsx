@@ -20,6 +20,7 @@ import Certificates from "./pages/Certificates";
 import Contact from "./pages/Contact";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import CrearAula from "./pages/CrearAula";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import EventDetail from "./pages/EventDetail";
@@ -264,6 +265,7 @@ export default function App() {
           <Route path="/contacto" element={<PublicLayout><Contact /></PublicLayout>} />
           <Route path="/login" element={<PublicLayout><Login /></PublicLayout>} />
           <Route path="/registro" element={<PublicLayout><Register /></PublicLayout>} />
+          <Route path="/crear-aula" element={<PublicLayout><CrearAula /></PublicLayout>} />
           <Route path="/forgot-password" element={<PublicLayout><ForgotPassword /></PublicLayout>} />
           <Route path="/reset-password" element={<PublicLayout><ResetPassword /></PublicLayout>} />
           <Route path="/eventos/:id" element={<PublicLayout><EventDetail /></PublicLayout>} />
