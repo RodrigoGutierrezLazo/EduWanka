@@ -41,9 +41,20 @@ export function getActiveTenantSlug(): string | null {
   }
 
   // 4. Sin dominio base configurado: heurística de respaldo para entornos
-  // (ej. previsualizaciones) donde se desconoce el dominio final. Asume el
-  // patrón clásico "subdominio.dominio.tld" de 2 niveles.
-  if (parts.length >= 3 && parts[0] !== 'www') {
+  // (ej. previsualizaciones) donde se desconoce el dominio final. Con sufijos
+  // de dominio de 2 niveles (.net.pe, .com.pe, .co.uk...) el dominio raíz ya
+  // tiene 3 partes, así que ahí se exigen 4+ partes para considerar que hay
+  // subdominio de inquilino. Incidente de producción 2026-06-10: el build sin
+  // VITE_APP_BASE_DOMAIN trataba "eduwanka.net.pe" como el inquilino
+  // "eduwanka" y mostraba un aula en vez de la landing del SaaS.
+  const TWO_LEVEL_SUFFIXES = [
+    'net.pe', 'com.pe', 'org.pe', 'edu.pe', 'gob.pe', 'nom.pe', 'mil.pe',
+    'co.uk', 'org.uk', 'com.mx', 'com.ar', 'com.br', 'com.co', 'com.ec',
+  ];
+  const lastTwo = parts.slice(-2).join('.');
+  const minPartsForTenant = TWO_LEVEL_SUFFIXES.includes(lastTwo) ? 4 : 3;
+
+  if (parts.length >= minPartsForTenant && parts[0] !== 'www') {
     return parts[0];
   }
 

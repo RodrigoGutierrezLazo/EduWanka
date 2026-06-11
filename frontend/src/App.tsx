@@ -206,6 +206,20 @@ function darkenColor(hex: string, percent: number): string {
 
 export default function App() {
   useEffect(() => {
+    // Dominio raíz del SaaS (sin tenant activo): branding de la plataforma,
+    // sin consultar /tenant/current. El backend siempre responde con un
+    // tenant por defecto como fallback, y aplicarlo aquí hacía que la landing
+    // SaaS mostrara el título/colores de un aula (incidente 2026-06-10).
+    if (!hasActiveTenant()) {
+      const root = document.documentElement;
+      root.style.setProperty('--color-primary', '#7A0F1F');
+      root.style.setProperty('--color-primary-dark', '#64101C');
+      root.style.setProperty('--color-secondary', '#3E3D2A');
+      root.style.setProperty('--color-accent', '#C8A14A');
+      document.title = 'EduWanka | Plataforma Educativa';
+      return;
+    }
+
     apiClient.get('/api/v1/tenant/current')
       .then(({ data }) => {
         const tenant = data.data ?? data;
