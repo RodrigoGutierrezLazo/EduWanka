@@ -85,7 +85,7 @@ const Hero = () => {
         };
 
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-[#1a0507] via-[#7A0F1F] to-[#2a0509]">
+    <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-[#1a0507] via-[#7A0F1F] to-[#2a0509] border-b-[3px] border-accent">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
@@ -323,14 +323,7 @@ const Hero = () => {
         </div>
       </div>
 
-      {/* Bottom gradient fade: maroon → warm rose → cream, eased multi-stop blend */}
-      <div
-        className="absolute bottom-0 left-0 right-0 h-64 pointer-events-none"
-        style={{
-          background:
-            "linear-gradient(to bottom, rgba(249,246,240,0) 0%, rgba(249,246,240,0.02) 18%, rgba(249,246,240,0.08) 36%, rgba(249,246,240,0.2) 52%, rgba(249,246,240,0.42) 67%, rgba(249,246,240,0.68) 80%, rgba(249,246,240,0.9) 91%, #F9F6F0 100%)",
-        }}
-      />
+
     </section>
   );
 };

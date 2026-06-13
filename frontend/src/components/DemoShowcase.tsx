@@ -280,18 +280,41 @@ const SCENES = [
 export default function DemoShowcase() {
   const reduceMotion = useReducedMotion();
   const [scene, setScene] = useState(0);
-  const [playing, setPlaying] = useState(!reduceMotion);
+  const [playing, setPlaying] = useState(false);
+  const [isInView, setIsInView] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    if (!playing || reduceMotion) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true);
+          setPlaying(!reduceMotion);
+        } else {
+          setIsInView(false);
+          setPlaying(false);
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [reduceMotion]);
+
+  useEffect(() => {
+    if (!playing || !isInView || reduceMotion) return;
     const t = setTimeout(() => setScene((s) => (s + 1) % SCENES.length), SCENE_MS);
     return () => clearTimeout(t);
-  }, [playing, scene, reduceMotion]);
+  }, [playing, scene, reduceMotion, isInView]);
 
   const current = SCENES[scene];
 
   return (
-    <section id="demo" className="py-24 md:py-32 bg-gradient-to-br from-[#1a0507] via-[#7A0F1F] to-[#2a0509] px-6 lg:px-8 relative overflow-hidden">
+    <section ref={sectionRef} id="demo" className="py-24 md:py-32 bg-gradient-to-br from-[#1a0507] via-[#7A0F1F] to-[#2a0509] px-6 lg:px-8 relative overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.03)_1px,transparent_1px)] [background-size:32px_32px] pointer-events-none" />
       <div className="absolute top-10 left-1/4 w-72 h-72 bg-accent/10 rounded-full blur-[120px] pointer-events-none" />
 

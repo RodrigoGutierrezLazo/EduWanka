@@ -9,6 +9,7 @@ import { useState } from "react";
 import React from "react";
 import { apiClient } from "../lib/apiClient";
 import { hasActiveTenant } from "../lib/tenant";
+import Tilt3D from "../components/Tilt3D";
 
 /* ═══════════════════════════════════════════════════════════════════
    CERTIFICATES SHOWCASE — SaaS Feature Page
@@ -16,37 +17,142 @@ import { hasActiveTenant } from "../lib/tenant";
    Also includes a live certificate verifier for social proof.
    ═══════════════════════════════════════════════════════════════════ */
 
-const CertHero = () => (
-  <section className="relative bg-gradient-to-br from-[#1a0507] via-[#7A0F1F] to-[#2a0509] pt-40 pb-24 px-6 lg:px-8 overflow-hidden">
-    <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.03)_1px,transparent_1px)] [background-size:32px_32px] pointer-events-none" />
-    <div className="absolute bottom-20 left-20 w-80 h-80 bg-accent/10 rounded-full blur-[120px] pointer-events-none" />
+const CertHero = () => {
+  const float = (duration: number, distance: number, delay = 0) => ({
+    animate: { y: [0, -distance, 0] },
+    transition: { duration, delay, repeat: Infinity, ease: "easeInOut" as const },
+  });
 
-    <div className="max-w-7xl mx-auto relative z-10">
-      <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
-        <div className="flex items-center gap-3 mb-6">
-          <span className="px-4 py-1.5 bg-accent/15 border border-accent/30 rounded-full text-accent text-[11px] font-black uppercase tracking-widest">
-            Sistema de Certificación
-          </span>
+  return (
+    <section className="relative bg-gradient-to-br from-[#1a0507] via-[#7A0F1F] to-[#2a0509] pt-40 pb-32 px-6 lg:px-8 overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.03)_1px,transparent_1px)] [background-size:32px_32px] pointer-events-none" />
+      <div className="absolute bottom-20 left-20 w-80 h-80 bg-accent/10 rounded-full blur-[120px] pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          
+          {/* Left Column: Text and Buttons */}
+          <motion.div 
+            initial={{ opacity: 0, x: -30 }} 
+            animate={{ opacity: 1, x: 0 }} 
+            transition={{ duration: 0.7 }}
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <span className="px-4 py-1.5 bg-accent/15 border border-accent/30 rounded-full text-accent text-[11px] font-black uppercase tracking-widest">
+                Sistema de Certificación
+              </span>
+            </div>
+            <h1 className="font-display text-4xl md:text-5xl lg:text-6xl text-white font-extrabold mb-6 tracking-tight leading-tight">
+              Certificados <span className="text-accent italic">verificables</span>
+              <br />con un solo clic
+            </h1>
+            <p className="font-sans text-lg lg:text-xl text-white/60 max-w-2xl leading-relaxed mb-8">
+              Emite certificados oficiales con código QR, diseño personalizable y verificación pública instantánea. Garantiza la autenticidad de cada credencial académica.
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <Link to="/login" className="inline-flex items-center gap-2 bg-accent text-[#1a0507] px-8 py-4 rounded-full font-black text-sm uppercase tracking-widest shadow-lg shadow-accent/25 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+                Empezar a Certificar <Award className="w-4 h-4" />
+              </Link>
+              <a href="#verificador" className="inline-flex items-center gap-2 border-2 border-white/20 text-white px-8 py-4 rounded-full font-black text-sm uppercase tracking-widest hover:bg-white/10 hover:border-white/30 transition-all duration-300">
+                <Search className="w-4 h-4" /> Verificar Certificado
+              </a>
+            </div>
+          </motion.div>
+
+          {/* Right Column: 3D Certificate Viewer Mockup */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 30 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.9, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="hidden lg:block relative"
+          >
+            <Tilt3D maxTilt={6}>
+              <div className="relative" style={{ transformStyle: "preserve-3d" }}>
+                {/* Main Certificate Glassmorphic Card */}
+                <motion.div
+                  {...float(7, 10)}
+                  className="bg-white/[0.08] backdrop-blur-xl rounded-3xl border border-white/10 p-7 shadow-2xl relative overflow-hidden"
+                >
+                  {/* Decorative internal certificate border */}
+                  <div className="absolute inset-4 border border-white/15 rounded-2xl pointer-events-none" />
+                  <div className="absolute inset-5 border border-accent/20 rounded-xl pointer-events-none" />
+
+                  <div className="relative z-10 text-center space-y-4 py-2">
+                    <div className="flex items-center justify-center mb-1">
+                      <Award className="w-10 h-10 text-accent" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-[8px] font-black text-white/50 uppercase tracking-[0.25em]">Certificado Digital Oficial</p>
+                      <h4 className="font-display text-lg font-bold text-white leading-tight">Especialización en Gestión Pública</h4>
+                    </div>
+                    <p className="text-[10px] text-white/40 font-medium italic">Otorgado con distinción a</p>
+                    <p className="font-display text-xl font-extrabold text-white tracking-wide italic">María Torres Guzmán</p>
+                    
+                    <div className="pt-4 flex items-center justify-between border-t border-white/10 mt-4">
+                      <div className="text-left space-y-0.5">
+                        <p className="text-[7px] text-white/40 font-black uppercase tracking-widest">Código Único</p>
+                        <p className="text-xs font-black text-accent">CERT-2026-A7X2</p>
+                      </div>
+                      <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center border border-white/10">
+                        <QrCode className="w-7 h-7 text-white/80" />
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Floating card 1: QR Verification Verified */}
+                <motion.div
+                  initial={{ opacity: 0, x: -30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.8, duration: 0.5 }}
+                  className="absolute -bottom-6 -left-8 max-w-[190px]"
+                  style={{ zIndex: 30, transformStyle: "preserve-3d" }}
+                >
+                  <motion.div
+                    {...float(5, 7, 0.4)}
+                    className="bg-white rounded-2xl shadow-2xl p-3.5 border border-slate-100 flex items-center gap-3"
+                  >
+                    <div className="w-8 h-8 bg-primary/10 rounded-xl flex items-center justify-center shrink-0 text-primary">
+                      <ShieldCheck className="w-5 h-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-bold text-slate-800 leading-tight">QR Verificado</p>
+                      <p className="text-[8px] text-primary font-bold mt-0.5">100% Auténtico</p>
+                    </div>
+                  </motion.div>
+                </motion.div>
+
+                {/* Floating card 2: Digital signature badge */}
+                <motion.div
+                  initial={{ opacity: 0, x: 30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 1, duration: 0.5 }}
+                  className="absolute -top-6 -right-6 max-w-[200px]"
+                  style={{ zIndex: 40, transformStyle: "preserve-3d" }}
+                >
+                  <motion.div
+                    {...float(6, 8, 1)}
+                    className="bg-white rounded-2xl shadow-2xl p-3.5 border border-slate-100 flex items-center gap-3"
+                  >
+                    <div className="w-8 h-8 bg-accent/10 rounded-xl flex items-center justify-center shrink-0 text-accent">
+                      <Lock className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-bold text-slate-800 leading-tight">Firma Digital</p>
+                      <p className="text-[8px] text-slate-400 font-semibold mt-0.5">Cifrado de Seguridad</p>
+                    </div>
+                  </motion.div>
+                </motion.div>
+
+              </div>
+            </Tilt3D>
+          </motion.div>
+
         </div>
-        <h1 className="font-display text-4xl md:text-6xl text-white font-extrabold mb-6 tracking-tight leading-tight">
-          Certificados <span className="text-accent italic">verificables</span>
-          <br />con un solo clic
-        </h1>
-        <p className="font-sans text-xl text-white/60 max-w-2xl leading-relaxed mb-8">
-          Emite certificados oficiales con código QR, diseño personalizable y verificación pública instantánea. Garantiza la autenticidad de cada credencial académica.
-        </p>
-        <div className="flex flex-wrap gap-4">
-          <Link to="/login" className="inline-flex items-center gap-2 bg-accent text-[#1a0507] px-8 py-4 rounded-full font-black text-sm uppercase tracking-widest shadow-lg shadow-accent/25 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
-            Empezar a Certificar <Award className="w-4 h-4" />
-          </Link>
-          <a href="#verificador" className="inline-flex items-center gap-2 border-2 border-white/20 text-white px-8 py-4 rounded-full font-black text-sm uppercase tracking-widest hover:bg-white/10 hover:border-white/30 transition-all duration-300">
-            <Search className="w-4 h-4" /> Verificar Certificado
-          </a>
-        </div>
-      </motion.div>
-    </div>
-  </section>
-);
+      </div>
+    </section>
+  );
+};
 
 const CertFeatures = () => {
   const features = [

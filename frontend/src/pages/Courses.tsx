@@ -17,32 +17,176 @@ import Tilt3D from "../components/Tilt3D";
    Explains how the course system works, implementation, and results.
    ═══════════════════════════════════════════════════════════════════ */
 
-const CourseHero = () => (
-  <section className="relative bg-gradient-to-br from-[#1a0507] via-[#7A0F1F] to-[#2a0509] pt-40 pb-24 px-6 lg:px-8 overflow-hidden">
-    <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.03)_1px,transparent_1px)] [background-size:32px_32px] pointer-events-none" />
-    <div className="absolute top-20 right-20 w-72 h-72 bg-accent/10 rounded-full blur-[120px] pointer-events-none" />
+const CourseHero = () => {
+  const float = (duration: number, distance: number, delay = 0) => ({
+    animate: { y: [0, -distance, 0] },
+    transition: { duration, delay, repeat: Infinity, ease: "easeInOut" as const },
+  });
 
-    <div className="max-w-7xl mx-auto relative z-10">
-      <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
-        <div className="flex items-center gap-3 mb-6">
-          <span className="px-4 py-1.5 bg-accent/15 border border-accent/30 rounded-full text-accent text-[11px] font-black uppercase tracking-widest">
-            Sistema de Cursos
-          </span>
+  return (
+    <section className="relative bg-gradient-to-br from-[#1c1507] via-[#856524] to-[#2d220a] pt-40 pb-32 px-6 lg:px-8 overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.03)_1px,transparent_1px)] [background-size:32px_32px] pointer-events-none" />
+      <div className="absolute top-20 right-20 w-72 h-72 bg-white/5 rounded-full blur-[120px] pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          
+          {/* Left Column: Text and Button */}
+          <motion.div 
+            initial={{ opacity: 0, x: -30 }} 
+            animate={{ opacity: 1, x: 0 }} 
+            transition={{ duration: 0.7 }}
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <span className="px-4 py-1.5 bg-white/10 border border-white/20 rounded-full text-white text-[11px] font-black uppercase tracking-widest">
+                Sistema de Cursos
+              </span>
+            </div>
+            <h1 className="font-display text-4xl md:text-5xl lg:text-6xl text-white font-extrabold mb-6 tracking-tight leading-tight">
+              Gestión de <span className="text-white italic">Cursos</span>
+              <br />profesional y escalable
+            </h1>
+            <p className="font-sans text-lg lg:text-xl text-white/70 max-w-2xl leading-relaxed mb-8">
+              Crea, organiza y vende cursos con módulos, materiales multimedia, cuestionarios automáticos y certificación integrada — todo desde un panel intuitivo.
+            </p>
+            <Link to="/crear-aula" className="inline-flex items-center gap-2 bg-white text-[#2a1d07] px-8 py-4 rounded-full font-black text-sm uppercase tracking-widest shadow-lg shadow-white/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+              Crear Mi Primer Curso <ArrowRight className="w-4 h-4" />
+            </Link>
+          </motion.div>
+
+          {/* Right Column: 3D Course Viewer Mockup */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 30 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.9, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="hidden lg:block relative"
+          >
+            <Tilt3D maxTilt={6}>
+              <div className="relative" style={{ transformStyle: "preserve-3d" }}>
+                {/* Main Classroom Viewer Mockup */}
+                <motion.div
+                  {...float(7, 10)}
+                  className="bg-white/[0.08] backdrop-blur-xl rounded-3xl border border-white/10 p-6 shadow-2xl"
+                >
+                  {/* Mockup Header bar */}
+                  <div className="flex items-center gap-3 mb-5">
+                    <div className="flex gap-1.5">
+                      <span className="w-2.5 h-2.5 rounded-full bg-red-400/80" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-yellow-400/80" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-green-400/80" />
+                    </div>
+                    <div className="flex-1 h-6 bg-white/5 rounded-md flex items-center px-3">
+                      <span className="text-[9px] text-white/30 font-medium">aula.miacademia.eduwanka.pe/cursos</span>
+                    </div>
+                  </div>
+
+                  {/* Mockup Classroom Content */}
+                  <div className="space-y-4">
+                    <div className="space-y-1.5">
+                      <span className="text-[9px] font-black text-accent uppercase tracking-widest">Diplomado de Especialización</span>
+                      <h4 className="text-white font-extrabold text-sm line-clamp-1 leading-snug">Gestión Pública y Modernización</h4>
+                    </div>
+
+                    {/* Progress indicator */}
+                    <div className="bg-white/5 rounded-xl p-3 border border-white/5 space-y-2">
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-white/60 font-semibold">Tu Progreso</span>
+                        <span className="text-accent font-black">75% Completado</span>
+                      </div>
+                      <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                        <div className="h-full bg-accent rounded-full w-3/4" />
+                      </div>
+                    </div>
+
+                    {/* Class List items */}
+                    <div className="space-y-2">
+                      {[
+                        { title: "Módulo 1: Estructura del Estado", active: false, done: true },
+                        { title: "Módulo 2: Planificación Estratégica", active: false, done: true },
+                        { title: "Módulo 3: Contrataciones del Estado", active: true, done: false },
+                      ].map((item, idx) => (
+                        <div
+                          key={idx}
+                          className={`flex items-center gap-3 p-2.5 rounded-xl border text-xs font-semibold transition-all ${
+                            item.active
+                              ? "bg-accent/15 border-accent/40 text-white"
+                              : "bg-white/[0.02] border-white/5 text-white/60"
+                          }`}
+                        >
+                          <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[10px] ${
+                            item.done
+                              ? "bg-accent/20 text-accent"
+                              : item.active
+                              ? "bg-accent text-[#1a0507]"
+                              : "bg-white/10 text-white/40"
+                          }`}>
+                            {item.done ? "✓" : item.active ? "▶" : "○"}
+                          </div>
+                          <span className="truncate flex-1">{item.title}</span>
+                          {item.active && (
+                            <span className="text-[8px] bg-accent/20 text-accent font-black px-1.5 py-0.5 rounded uppercase tracking-wider">
+                              En Vivo
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Floating card 1: Teacher Assigned */}
+                <motion.div
+                  initial={{ opacity: 0, x: -30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.8, duration: 0.5 }}
+                  className="absolute -bottom-6 -left-10 max-w-[200px]"
+                  style={{ z: 30, transformStyle: "preserve-3d" }}
+                >
+                  <motion.div
+                    {...float(5, 7, 0.3)}
+                    className="bg-white rounded-2xl shadow-2xl p-3.5 border border-slate-100 flex items-center gap-3"
+                  >
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white text-xs font-black shrink-0">
+                      DR
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-bold text-slate-800 leading-tight">Dr. Carlos Mendoza</p>
+                      <p className="text-[8px] text-slate-400 font-semibold mt-0.5">Docente Principal</p>
+                    </div>
+                  </motion.div>
+                </motion.div>
+
+                {/* Floating card 2: Quiz Score / Grade */}
+                <motion.div
+                  initial={{ opacity: 0, x: 30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 1, duration: 0.5 }}
+                  className="absolute -top-6 -right-6 max-w-[190px]"
+                  style={{ z: 40, transformStyle: "preserve-3d" }}
+                >
+                  <motion.div
+                    {...float(6, 8, 0.9)}
+                    className="bg-white rounded-2xl shadow-2xl p-3.5 border border-slate-100 flex items-center gap-3"
+                  >
+                    <div className="w-8 h-8 bg-accent/15 rounded-xl flex items-center justify-center shrink-0 text-accent">
+                      <CheckCircle className="w-4.5 h-4.5" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-bold text-slate-800 leading-tight">Evaluación Final</p>
+                      <p className="text-[9px] text-accent font-black mt-0.5">Aprobado · 18/20</p>
+                    </div>
+                  </motion.div>
+                </motion.div>
+
+              </div>
+            </Tilt3D>
+          </motion.div>
+
         </div>
-        <h1 className="font-display text-4xl md:text-6xl text-white font-extrabold mb-6 tracking-tight leading-tight">
-          Gestión de <span className="text-accent italic">Cursos</span>
-          <br />profesional y escalable
-        </h1>
-        <p className="font-sans text-xl text-white/60 max-w-2xl leading-relaxed mb-8">
-          Crea, organiza y vende cursos con módulos, materiales multimedia, cuestionarios automáticos y certificación integrada — todo desde un panel intuitivo.
-        </p>
-        <Link to="/crear-aula" className="inline-flex items-center gap-2 bg-accent text-[#1a0507] px-8 py-4 rounded-full font-black text-sm uppercase tracking-widest shadow-lg shadow-accent/25 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
-          Crear Mi Primer Curso <ArrowRight className="w-4 h-4" />
-        </Link>
-      </motion.div>
-    </div>
-  </section>
-);
+      </div>
+    </section>
+  );
+};
 
 const CourseFeatures = () => {
   const features = [

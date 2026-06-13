@@ -1,2 +1,9 @@
 User-agent: *
-Disallow:
+Disallow: /api/
+Disallow: /aula/
+Disallow: /login
+Disallow: /registro
+Disallow: /forgot-password
+Disallow: /reset-password
+
+Sitemap: https://eduwanka.net.pe/sitemap.xml
